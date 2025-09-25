@@ -1,25 +1,6 @@
 package com.example.studivo.presentation.ui
 
 
-import android.app.Activity
-import android.content.ContentValues
-import android.content.Context
-import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.Rect
-import android.os.Build
-import android.os.Environment
-import android.provider.MediaStore
-import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,82 +12,43 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AttachMoney
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.CurrencyExchange
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import androidx.core.content.ContextCompat
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.studivo.R
-import com.example.studivo.domain.model.enums.CalculationMode
-import com.example.studivo.presentation.utils.captureView
-import com.example.studivo.presentation.utils.shareBitmap
-import com.example.studivo.ui.theme.domain.model.viewmodel.DollarViewModel
-import kotlinx.coroutines.launch
-import java.text.DecimalFormat
-import android.Manifest
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.studivo.presentation.navegacion.AppRoutes
 import com.example.studivo.presentation.ui.commons.BottomNavigationBar
 
 
@@ -123,22 +65,356 @@ fun MainScreen(
 fun MainScreenContent(
 	navController: NavController,
 ) {
-	
 	Scaffold(
 		topBar = {
 			CenterAlignedTopAppBar(
 				title = {
-					Text("Studivo", style = MaterialTheme.typography.titleMedium)
-				}
+					Row(
+						verticalAlignment = Alignment.CenterVertically
+					) {
+						Icon(
+							imageVector = Icons.Default.MusicNote,
+							contentDescription = null,
+							tint = Color(0xFF1976D2),
+							modifier = Modifier.size(28.dp)
+						)
+						Spacer(modifier = Modifier.width(8.dp))
+						Text(
+							text = "Studivo",
+							style = MaterialTheme.typography.titleLarge.copy(
+								fontWeight = FontWeight.Bold,
+								color = Color(0xFF1976D2)
+							)
+						)
+					}
+				},
+				colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+					containerColor = Color.White
+				)
 			)
 		},
-		bottomBar = {
-			BottomNavigationBar(navController)
-		}
+		bottomBar = { BottomNavigationBar(navController) },
+		floatingActionButton = {
+			FloatingActionButton(
+				onClick = { navController.navigate(AppRoutes.CreateRoutineScreen) },
+				containerColor = Color(0xFF4CAF50),
+				contentColor = Color.White,
+				elevation = FloatingActionButtonDefaults.elevation(
+					defaultElevation = 8.dp
+				)
+			) {
+				Icon(
+					imageVector = Icons.Default.Add,
+					contentDescription = "Nueva rutina",
+					modifier = Modifier.size(28.dp)
+				)
+			}
+		},
+		containerColor = Color(0xFFF8F9FA)
 	) { innerPadding ->
-		Box(modifier = Modifier.padding(innerPadding)){
-			Text(text = "hola")
+		LazyColumn(
+			modifier = Modifier
+				.padding(innerPadding)
+				.fillMaxSize(),
+			contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+			verticalArrangement = Arrangement.spacedBy(12.dp)
+		) {
+			
+			// Estadísticas rápidas
+			item {
+				QuickStatsCard()
+			}
+			
+			// Sección de rutinas
+			item {
+				SectionTitle("Mis Rutinas")
+			}
+			
+			// Lista de rutinas
+			items(sampleRoutines) { rutina ->
+				RoutineCard(rutina)
+			}
+			
+			// Espacio extra para el FAB
+			item {
+				Spacer(modifier = Modifier.height(80.dp))
+			}
+		}
 	}
 }
+
+
+// --- Estadísticas rápidas ---
+@Composable
+fun QuickStatsCard() {
+	Card(
+		modifier = Modifier.fillMaxWidth(),
+		colors = CardDefaults.cardColors(
+			containerColor = Color.White
+		),
+		elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+	) {
+		Column(
+			modifier = Modifier.padding(20.dp)
+		) {
+			Text(
+				text = "Esta Semana",
+				style = MaterialTheme.typography.titleMedium.copy(
+					fontWeight = FontWeight.SemiBold
+				),
+				color = Color.Black
+			)
+			
+			Spacer(modifier = Modifier.height(16.dp))
+			
+			Row(
+				modifier = Modifier.fillMaxWidth(),
+				horizontalArrangement = Arrangement.SpaceEvenly
+			) {
+				StatItem(
+					icon = Icons.Default.Timer,
+					value = "2.5h",
+					label = "Practicado",
+					color = Color(0xFF2196F3)
+				)
+				StatItem(
+					icon = Icons.Default.CheckCircle,
+					value = "8",
+					label = "Rutinas",
+					color = Color(0xFF4CAF50)
+				)
+				StatItem(
+					icon = Icons.Default.TrendingUp,
+					value = "5",
+					label = "Racha",
+					color = Color(0xFFFF9800)
+				)
+			}
+		}
+	}
 }
 
+// --- Item de estadística ---
+@Composable
+fun StatItem(
+	icon: ImageVector,
+	value: String,
+	label: String,
+	color: Color
+) {
+	Column(
+		horizontalAlignment = Alignment.CenterHorizontally
+	) {
+		Box(
+			modifier = Modifier
+				.size(40.dp)
+				.background(
+					color = color.copy(alpha = 0.1f),
+					shape = CircleShape
+				),
+			contentAlignment = Alignment.Center
+		) {
+			Icon(
+				imageVector = icon,
+				contentDescription = null,
+				tint = color,
+				modifier = Modifier.size(20.dp)
+			)
+		}
+		
+		Spacer(modifier = Modifier.height(8.dp))
+		
+		Text(
+			text = value,
+			style = MaterialTheme.typography.titleMedium.copy(
+				fontWeight = FontWeight.Bold
+			),
+			color = Color.Black
+		)
+		
+		Text(
+			text = label,
+			style = MaterialTheme.typography.bodySmall,
+			color = Color.Gray
+		)
+	}
+}
+
+// --- Título de sección ---
+@Composable
+fun SectionTitle(title: String) {
+	Row(
+		modifier = Modifier.fillMaxWidth(),
+		verticalAlignment = Alignment.CenterVertically
+	) {
+		Text(
+			text = title,
+			style = MaterialTheme.typography.titleLarge.copy(
+				fontWeight = FontWeight.Bold
+			),
+			color = Color.Black,
+			modifier = Modifier.weight(1f))
+	}
+}
+
+// --- Componente reutilizable de tarjeta de rutina mejorado ---
+@Composable
+fun RoutineCard(rutina: Routine) {
+	Card(
+		modifier = Modifier
+			.fillMaxWidth()
+			.height(100.dp),
+		colors = CardDefaults.cardColors(
+			containerColor = Color.White
+		),
+		elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+		shape = RoundedCornerShape(16.dp),
+		onClick = { /* navegar a detalle de rutina o reproducir */ }
+	) {
+		Row(
+			modifier = Modifier
+				.fillMaxSize()
+				.padding(16.dp),
+			verticalAlignment = Alignment.CenterVertically
+		) {
+			// Ícono circular con gradiente
+			Box(
+				modifier = Modifier
+					.size(56.dp)
+					.background(
+						brush = Brush.linearGradient(
+							colors = listOf(
+								rutina.primaryColor,
+								rutina.secondaryColor
+							)
+						),
+						shape = CircleShape
+					),
+				contentAlignment = Alignment.Center
+			) {
+				Text(
+					text = rutina.emoji,
+					style = MaterialTheme.typography.headlineSmall
+				)
+			}
+			
+			Spacer(modifier = Modifier.width(16.dp))
+			
+			// Información de la rutina
+			Column(modifier = Modifier.weight(1f)) {
+				Text(
+					text = rutina.name,
+					style = MaterialTheme.typography.titleMedium.copy(
+						fontWeight = FontWeight.SemiBold
+					),
+					maxLines = 1,
+					overflow = TextOverflow.Ellipsis,
+					color = Color.Black
+				)
+				
+				Spacer(modifier = Modifier.height(4.dp))
+				
+				Row(
+					verticalAlignment = Alignment.CenterVertically
+				) {
+					Icon(
+						imageVector = Icons.Default.Timer,
+						contentDescription = null,
+						modifier = Modifier.size(16.dp),
+						tint = Color.Gray
+					)
+					Spacer(modifier = Modifier.width(4.dp))
+					Text(
+						text = "${rutina.duration} min",
+						style = MaterialTheme.typography.bodyMedium,
+						color = Color.Gray
+					)
+					
+					Spacer(modifier = Modifier.width(16.dp))
+					
+					Icon(
+						imageVector = Icons.Default.Star,
+						contentDescription = null,
+						modifier = Modifier.size(16.dp),
+						tint = if (rutina.isFavorite) Color(0xFFFFC107) else Color.Gray
+					)
+				}
+			}
+			
+			// Botón de reproducir
+			Box(
+				modifier = Modifier
+					.size(40.dp)
+					.background(
+						color = Color(0xFF4CAF50).copy(alpha = 0.1f),
+						shape = CircleShape
+					),
+				contentAlignment = Alignment.Center
+			) {
+				Icon(
+					imageVector = Icons.Default.PlayArrow,
+					contentDescription = "Iniciar rutina",
+					tint = Color(0xFF4CAF50),
+					modifier = Modifier.size(24.dp)
+				)
+			}
+		}
+	}
+}
+
+// --- Datos de prueba mejorados ---
+data class Routine(
+	val name: String,
+	val duration: Int,
+	val emoji: String,
+	val primaryColor: Color,
+	val secondaryColor: Color,
+	val isFavorite: Boolean = false
+)
+
+val sampleRoutines = listOf(
+	Routine(
+		name = "Calentamiento de manos",
+		duration = 10,
+		emoji = "🔥",
+		primaryColor = Color(0xFFFF6B6B),
+		secondaryColor = Color(0xFFFFE66D),
+		isFavorite = true
+	),
+	Routine(
+		name = "Escalas y arpegios",
+		duration = 20,
+		emoji = "🎹",
+		primaryColor = Color(0xFF4ECDC4),
+		secondaryColor = Color(0xFF44A08D)
+	),
+	Routine(
+		name = "Lectura a primera vista",
+		duration = 15,
+		emoji = "👀",
+		primaryColor = Color(0xFF667EEA),
+		secondaryColor = Color(0xFF764BA2),
+		isFavorite = true
+	),
+	Routine(
+		name = "Repertorio clásico",
+		duration = 30,
+		emoji = "🎼",
+		primaryColor = Color(0xFFF093FB),
+		secondaryColor = Color(0xFFF5576C)
+	),
+	Routine(
+		name = "Técnica avanzada",
+		duration = 25,
+		emoji = "⚡",
+		primaryColor = Color(0xFF4FACFE),
+		secondaryColor = Color(0xFF00F2FE)
+	),
+	Routine(
+		name = "Improvisación",
+		duration = 20,
+		emoji = "🎭",
+		primaryColor = Color(0xFFA8EDEA),
+		secondaryColor = Color(0xFFFED6E3)
+	)
+)

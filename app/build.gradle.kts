@@ -47,6 +47,11 @@ android {
 
 dependencies {
 	
+	// --- Reorderable (Drag & Drop en LazyColumn) ---
+	implementation(libs.reorderable)
+
+	
+	
 	// --- WorkManager (UNA sola referencia) ---
 	implementation("androidx.work:work-runtime-ktx:2.9.0")
 	

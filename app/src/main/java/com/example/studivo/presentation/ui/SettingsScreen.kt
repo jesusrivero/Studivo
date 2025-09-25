@@ -14,15 +14,15 @@ import com.example.studivo.presentation.ui.commons.BottomNavigationBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StatisticsScreen(
+fun SettingsScreen(
 	navController: NavController,
 ) {
-	StatisticsScreenContent(navController = navController)
+	SettingsScreenContent(navController = navController)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StatisticsScreenContent(
+fun SettingsScreenContent(
 	navController: NavController,
 ) {
 	
@@ -30,7 +30,7 @@ fun StatisticsScreenContent(
 		topBar = {
 			CenterAlignedTopAppBar(
 				title = {
-					Text("Estadisticas", style = MaterialTheme.typography.titleMedium)
+					Text("Ajustes", style = MaterialTheme.typography.titleMedium)
 				}
 			)
 		},

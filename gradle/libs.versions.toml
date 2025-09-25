@@ -4,6 +4,7 @@ agp = "8.10.1"
 androidxCoreKtx = "1.17.0"
 androidxWorkRuntimeKtx = "2.9.0"
 charty = "1.0.0"
+
 converterMoshi = "2.9.0"
 coreKtxVersion = "1.13.1"
 coreSplashscreen = "1.0.1"
@@ -43,9 +44,11 @@ roomTesting = "2.7.2"
 workRuntimeKtx = "2.10.1"
 workRuntimeKtxVersion = "2.9.0"
 navigationComposeAndroid = "2.9.3"
+reorderable = "3.0.0"
+
 
 [libraries]
-
+reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 androidx-core-ktx-v1170 = { module = "androidx.core:core-ktx", version.ref = "androidxCoreKtx" }
 androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltWork" }
 androidx-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hiltWork" }

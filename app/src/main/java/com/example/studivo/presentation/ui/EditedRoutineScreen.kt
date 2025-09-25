@@ -1,8 +1,9 @@
-package com.example.studivo.presentation.ui.commons
+package com.example.studivo.presentation.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -12,22 +13,20 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.studivo.R
+import com.example.studivo.presentation.ui.commons.BottomNavigationBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(
+fun EditedRoutineScreen(
 	navController: NavController,
 ) {
-	SettingsScreenContent(navController = navController)
+	EditedRoutineScreenContent(navController = navController)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreenContent(
+fun EditedRoutineScreenContent(
 	navController: NavController,
 ) {
 	
@@ -35,12 +34,14 @@ fun SettingsScreenContent(
 		topBar = {
 			CenterAlignedTopAppBar(
 				title = {
-					Text("Ajustes", style = MaterialTheme.typography.titleMedium)
-				}
+					Text("Editar rutina", style = MaterialTheme.typography.titleMedium)
+				},
+				navigationIcon = {
+					IconButton(onClick = { navController.popBackStack() }) {
+						Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+					}
+				},
 			)
-		},
-		bottomBar = {
-			BottomNavigationBar(navController)
 		}
 	) { innerPadding ->
 		Box(modifier = Modifier.padding(innerPadding)){
