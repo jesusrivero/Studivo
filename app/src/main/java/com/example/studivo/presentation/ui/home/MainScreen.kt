@@ -132,7 +132,7 @@ fun MainScreenContent(
 			
 			// Lista de rutinas
 			items(sampleRoutines) { rutina ->
-				RoutineCard(rutina)
+				RoutineCard(rutina,navController)
 			}
 			
 			// Espacio extra para el FAB
@@ -259,7 +259,7 @@ fun SectionTitle(title: String) {
 
 // --- Componente reutilizable de tarjeta de rutina mejorado ---
 @Composable
-fun RoutineCard(rutina: Routine) {
+fun RoutineCard(rutina: Routinee, navController: NavController) {
 	Card(
 		modifier = Modifier
 			.fillMaxWidth()
@@ -269,7 +269,7 @@ fun RoutineCard(rutina: Routine) {
 		),
 		elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
 		shape = RoundedCornerShape(16.dp),
-		onClick = { /* navegar a detalle de rutina o reproducir */ }
+		onClick = { navController.navigate(AppRoutes.DetailRoutineScreen) }
 	) {
 		Row(
 			modifier = Modifier
@@ -363,7 +363,7 @@ fun RoutineCard(rutina: Routine) {
 }
 
 // --- Datos de prueba mejorados ---
-data class Routine(
+data class Routinee(
 	val name: String,
 	val duration: Int,
 	val emoji: String,
@@ -373,7 +373,7 @@ data class Routine(
 )
 
 val sampleRoutines = listOf(
-	Routine(
+	Routinee(
 		name = "Calentamiento de manos",
 		duration = 10,
 		emoji = "🔥",
@@ -381,14 +381,14 @@ val sampleRoutines = listOf(
 		secondaryColor = Color(0xFFFFE66D),
 		isFavorite = true
 	),
-	Routine(
+	Routinee(
 		name = "Escalas y arpegios",
 		duration = 20,
 		emoji = "🎹",
 		primaryColor = Color(0xFF4ECDC4),
 		secondaryColor = Color(0xFF44A08D)
 	),
-	Routine(
+	Routinee(
 		name = "Lectura a primera vista",
 		duration = 15,
 		emoji = "👀",
@@ -396,21 +396,21 @@ val sampleRoutines = listOf(
 		secondaryColor = Color(0xFF764BA2),
 		isFavorite = true
 	),
-	Routine(
+	Routinee(
 		name = "Repertorio clásico",
 		duration = 30,
 		emoji = "🎼",
 		primaryColor = Color(0xFFF093FB),
 		secondaryColor = Color(0xFFF5576C)
 	),
-	Routine(
+	Routinee(
 		name = "Técnica avanzada",
 		duration = 25,
 		emoji = "⚡",
 		primaryColor = Color(0xFF4FACFE),
 		secondaryColor = Color(0xFF00F2FE)
 	),
-	Routine(
+	Routinee(
 		name = "Improvisación",
 		duration = 20,
 		emoji = "🎭",
