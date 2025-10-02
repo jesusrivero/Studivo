@@ -1,7 +1,6 @@
-package com.example.studivo.presentation.ui
+package com.example.studivo.presentation.ui.routine
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,40 +12,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DragHandle
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Speed
-import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Divider
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -56,26 +32,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.studivo.presentation.ui.commons.BottomNavigationBar
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.LinearProgressIndicator
+import com.example.studivo.domain.model.Phase
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailRoutineScreen(
 	navController: NavController,
+	routineId: Long
 ) {
-	DetailRoutineScreenContent(navController = navController)
+	DetailRoutineScreenContent(navController = navController, routineId = routineId)
 }
 
 // --- FocusModeScreenContent ---
@@ -83,6 +58,7 @@ fun DetailRoutineScreen(
 @Composable
 fun DetailRoutineScreenContent(
 	navController: NavController,
+	routineId: Long,
 	routine: Routine = sampleRoutine()
 ) {
 	// Estados para el control de la rutina
@@ -408,17 +384,7 @@ data class Routine(
 	} else 0
 }
 
-data class Phase(
-	val id: String,
-	val name: String,
-	val duration: Int,
-	val bpm: Int = 0,
-	val timeSignature: String = "4/4",
-	val color: Color = Color(0xFF2196F3),
-	val repetitions: Int = 1,
-	val bpmIncrement: Int = 0,
-	val bpmMax: Int = 0
-)
+
 
 // --- Sample Data (para preview) ---
 private fun sampleRoutine() = Routine(
@@ -432,7 +398,8 @@ private fun sampleRoutine() = Routine(
 			duration = 5,
 			bpm = 120,
 			timeSignature = "4/4",
-			color = Color(0xFF4CAF50)
+			color = Color(0xFF4CAF50),
+			routineId = ""
 		),
 		Phase(
 			id = "2",
@@ -440,7 +407,8 @@ private fun sampleRoutine() = Routine(
 			duration = 15,
 			bpm = 80,
 			timeSignature = "4/4",
-			color = Color(0xFF2196F3)
+			color = Color(0xFF2196F3),
+			routineId = ""
 		),
 		Phase(
 			id = "3",
@@ -448,7 +416,8 @@ private fun sampleRoutine() = Routine(
 			duration = 20,
 			bpm = 140,
 			timeSignature = "3/4",
-			color = Color(0xFFF44336)
+			color = Color(0xFFF44336),
+			routineId = ""
 		)
 	)
 )

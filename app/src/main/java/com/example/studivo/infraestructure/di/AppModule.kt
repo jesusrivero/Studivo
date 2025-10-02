@@ -3,73 +3,77 @@ package com.example.studivo.infraestructure.di
 import android.content.Context
 import androidx.room.Room
 import com.example.studivo.data.local.AppDatabase
-import com.example.studivo.data.local.FavoriteAmountDao
+import com.example.studivo.data.local.PhaseDao
+import com.example.studivo.data.local.RoutineDao
 import com.example.studivo.data.preferences.ThemeDataStore
-import com.example.studivo.data.remote.DollarApiService
-import com.example.studivo.data.remote.HexaRateApiService
-import com.example.studivo.data.remote.local.datastore.DollarDataStore
-import com.example.studivo.domain.repository.DollarRepository
-import com.example.studivo.data.repository.DollarRepositoryImpl
-import com.example.studivo.data.repository.FavoriteAmountRepositoryImpl
-import com.example.studivo.domain.repository.FavoriteAmountRepository
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.example.studivo.data.repository.RoutineRepositoryImpl
+import com.example.studivo.domain.repository.RoutineRepository
+import com.example.studivo.domain.usecase.DeletePhaseUseCase
+import com.example.studivo.domain.usecase.DeleteRoutineUseCase
+import com.example.studivo.domain.usecase.GetAllRoutinesUseCase
+import com.example.studivo.domain.usecase.GetPhaseByIdUseCase
+import com.example.studivo.domain.usecase.GetPhasesByRoutineUseCase
+import com.example.studivo.domain.usecase.GetRoutineByIdUseCase
+import com.example.studivo.domain.usecase.InsertPhaseUseCase
+import com.example.studivo.domain.usecase.InsertRoutineUseCase
+import com.example.studivo.domain.usecase.RoutineUseCases
+import com.example.studivo.domain.usecase.UpdatePhaseUseCase
+import com.example.studivo.domain.usecase.UpdatePhasesOrderUseCase
+import com.example.studivo.domain.usecase.UpdateRoutineUseCase
+
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
 import javax.inject.Singleton
+
+
+
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
 	
-	@Provides @Singleton
-	fun provideMoshi(): Moshi =
-		Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
-	
-	@Provides @Singleton
-	fun provideDollarRetrofit(moshi: Moshi): Retrofit =
-		Retrofit.Builder()
-			.baseUrl("https://ve.dolarapi.com/")
-			.addConverterFactory(MoshiConverterFactory.create(moshi))
-			.build()
-	
-	@Provides @Singleton
-	fun provideDollarApiService(retrofit: Retrofit): DollarApiService =
-		retrofit.create(DollarApiService::class.java)
-	
-	@Provides @Singleton
-	fun provideHexaRateApiService(moshi: Moshi): HexaRateApiService =
-		Retrofit.Builder()
-			.baseUrl("https://hexarate.paikama.co/api/rates/")
-			.addConverterFactory(MoshiConverterFactory.create(moshi))
-			.build()
-			.create(HexaRateApiService::class.java)
-	
-	@Provides @Singleton
-	fun provideDollarDataStore(@ApplicationContext context: Context): DollarDataStore =
-		DollarDataStore(context)
-	
-	@Provides @Singleton
-	fun provideDollarRepository(
-		api: DollarApiService,
-		hexaApi: HexaRateApiService,
-		dataStore: DollarDataStore,
-	): DollarRepository = DollarRepositoryImpl(api, hexaApi, dataStore)
-	
-	@Provides @Singleton
-	fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
-		Room.databaseBuilder(context, AppDatabase::class.java, "app_database").build()
 	
 	@Provides
-	fun provideFavoriteAmountDao(db: AppDatabase): FavoriteAmountDao = db.favoriteAmountDao()
+	@Singleton
+	fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
+		Room.databaseBuilder(context, AppDatabase::class.java, "app_db").build()
 	
-	@Provides @Singleton
-	fun provideFavoriteAmountRepository(dao: FavoriteAmountDao): FavoriteAmountRepository =
-		FavoriteAmountRepositoryImpl(dao)
+	@Provides
+	fun provideRoutineDao(db: AppDatabase): RoutineDao = db.routineDao()
+	
+	@Provides
+	fun providePhaseDao(db: AppDatabase): PhaseDao = db.phaseDao()
+	
+
+	
+	@Provides
+	@Singleton
+	fun provideRoutineRepository(
+		routineDao: RoutineDao,
+		phaseDao: PhaseDao
+	): RoutineRepository {
+		return RoutineRepositoryImpl(routineDao, phaseDao)
+	}
+	
+	@Provides
+	@Singleton
+	fun provideRoutineUseCases(repository: RoutineRepository): RoutineUseCases {
+		return RoutineUseCases(
+			insertRoutine = InsertRoutineUseCase(repository),
+			insertPhase = InsertPhaseUseCase(repository),
+			getAllRoutines = GetAllRoutinesUseCase(repository),
+			getPhasesByRoutine = GetPhasesByRoutineUseCase(repository),
+			deleteRoutine = DeleteRoutineUseCase(repository),
+			deletePhase = DeletePhaseUseCase(repository),
+			updatePhasesOrder = UpdatePhasesOrderUseCase(repository),
+			getRoutineById = GetRoutineByIdUseCase(repository),
+			updateRoutine= UpdateRoutineUseCase(repository),
+			updatePhase= UpdatePhaseUseCase(repository),
+			getPhaseById= GetPhaseByIdUseCase(repository))
+		
+	}
 	
 	@Provides @Singleton
 	fun provideThemeDataStore(@ApplicationContext context: Context): ThemeDataStore =

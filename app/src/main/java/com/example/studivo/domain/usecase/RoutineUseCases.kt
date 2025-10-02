@@ -1,55 +1,54 @@
 package com.example.studivo.domain.usecase
 
-import com.example.studivo.domain.model.entity.PhaseEntity
+import com.example.studivo.domain.model.Phase
 import com.example.studivo.domain.repository.RoutineRepository
-import com.example.studivo.presentation.ui.routine.Phase
 import com.example.studivo.presentation.ui.routine.Routine
-import javax.inject.Inject
-
 
 class InsertRoutineUseCase(private val repository: RoutineRepository) {
-	suspend operator fun invoke(routine: Routine): Long {
-		return repository.insertRoutine(routine)
-	}
+	suspend operator fun invoke(routine: Routine): String = repository.insertRoutine(routine)
 }
 
 class InsertPhaseUseCase(private val repository: RoutineRepository) {
-	suspend operator fun invoke(phase: Phase): Long {
-		return repository.insertPhase(phase)
-	}
+	suspend operator fun invoke(phase: Phase): String = repository.insertPhase(phase)
 }
 
 class GetAllRoutinesUseCase(private val repository: RoutineRepository) {
-	suspend operator fun invoke(): List<Routine> {
-		return repository.getAllRoutines()
-	}
+	suspend operator fun invoke(): List<Routine> = repository.getAllRoutines()
 }
 
 class GetPhasesByRoutineUseCase(private val repository: RoutineRepository) {
-	suspend operator fun invoke(routineId: Long): List<Phase> {
-		return repository.getPhasesByRoutine(routineId)
-	}
+	suspend operator fun invoke(routineId: String): List<Phase> = repository.getPhasesByRoutine(routineId)
 }
 
 class DeleteRoutineUseCase(private val repository: RoutineRepository) {
-	suspend operator fun invoke(routineId: Long) {
-		repository.deleteRoutine(routineId)
-	}
+	suspend operator fun invoke(routineId: String) = repository.deleteRoutine(routineId)
 }
 
 class DeletePhaseUseCase(private val repository: RoutineRepository) {
-	suspend operator fun invoke(phaseId: Long) {
-		repository.deletePhase(phaseId)
-	}
+	suspend operator fun invoke(phaseId: String) = repository.deletePhase(phaseId)
 }
 
 class UpdatePhasesOrderUseCase(private val repository: RoutineRepository) {
-	suspend operator fun invoke(phases: List<Phase>) {
-		repository.updatePhasesOrder(phases)
-	}
+	suspend operator fun invoke(phases: List<Phase>) = repository.updatePhasesOrder(phases)
 }
 
-// Contenedor de todos los casos de uso
+
+class GetRoutineByIdUseCase(private val repository: RoutineRepository) {
+	suspend operator fun invoke(routineId: String): Routine? = repository.getRoutineById(routineId)
+}
+
+class UpdateRoutineUseCase(private val repository: RoutineRepository) {
+	suspend operator fun invoke(routine: Routine) = repository.updateRoutine(routine)
+}
+
+class UpdatePhaseUseCase(private val repository: RoutineRepository) {
+	suspend operator fun invoke(phase: Phase) = repository.updatePhase(phase)
+}
+
+class GetPhaseByIdUseCase(private val repository: RoutineRepository) {
+	suspend operator fun invoke(phaseId: String): Phase? = repository.getPhaseById(phaseId)
+}
+
 data class RoutineUseCases(
 	val insertRoutine: InsertRoutineUseCase,
 	val insertPhase: InsertPhaseUseCase,
@@ -57,5 +56,9 @@ data class RoutineUseCases(
 	val getPhasesByRoutine: GetPhasesByRoutineUseCase,
 	val deleteRoutine: DeleteRoutineUseCase,
 	val deletePhase: DeletePhaseUseCase,
-	val updatePhasesOrder: UpdatePhasesOrderUseCase
+	val updatePhasesOrder: UpdatePhasesOrderUseCase,
+	val getRoutineById: GetRoutineByIdUseCase,         // nuevo
+	val updateRoutine: UpdateRoutineUseCase,           // nuevo
+	val updatePhase: UpdatePhaseUseCase,
+	val getPhaseById: GetPhaseByIdUseCase              // nuevo
 )

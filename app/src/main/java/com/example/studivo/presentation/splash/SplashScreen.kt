@@ -26,7 +26,7 @@ fun SplashScreen(navController: NavController) {
 		contentAlignment = Alignment.Center
 	) {
 		Image(
-			painter = painterResource(id = R.drawable.ic_studivo_logo),
+			painter = painterResource(id = R.drawable.ic_studivo_logo_2),
 			contentDescription = "Logo",
 			modifier = Modifier
 				.size(200.dp)
