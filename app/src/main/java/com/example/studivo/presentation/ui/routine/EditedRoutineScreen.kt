@@ -129,7 +129,7 @@ fun EditedRoutineScreenContent(
             bpmInitial: ${phase.bpmInitial}
             timeSignature: ${phase.timeSignature}
             color (Int): ${phase.color}
-            color (hex): #${Integer.toHexString(phase.color)}
+           color (string): ${phase.color}
             modo: ${phase.mode}
             repeticiones: ${phase.repetitions}
             bpmIncrement: ${phase.bpmIncrement}
@@ -312,7 +312,7 @@ fun EditPhaseBottomSheet(
 			repetitions = if (it.repetitions > 0) it.repetitions.toString() else ""
 			bpmIncrement = if (it.bpmIncrement > 0) it.bpmIncrement.toString() else ""
 			bpmMax = if (it.bpmMax > 0) it.bpmMax.toString() else ""
-			selectedColor = Color(it.color)
+			selectedColor = Color(android.graphics.Color.parseColor(it.color))
 			selectedMode = it.mode
 			showAdvancedOptions = it.repetitions > 0 || it.bpmMax > it.bpmInitial
 		} ?: run {
@@ -330,7 +330,7 @@ fun EditPhaseBottomSheet(
 							repetitions = it.repetitions,
 							bpmIncrement = it.bpmIncrement,
 							bpmMax = it.bpmMax,
-							color = it.color.toArgb(), // <-- convertir Color -> Int ARGB
+							color = String.format("#%08X", it.color),
 							mode = it.mode
 						)
 						viewModel.addTempPhase(mapped)
@@ -395,7 +395,7 @@ fun EditPhaseBottomSheet(
 								bpmIncrement.toIntOrNull() ?: 0 else 0,
 							bpmMax = if (showAdvancedOptions && selectedMode == "UNTIL_BPM_MAX")
 								bpmMax.toIntOrNull() ?: 0 else 0,
-							color = selectedColor.toArgb(),
+							color = String.format("#%08X", selectedColor.toArgb()), // ✅ Int → Hex String
 							mode = if (showAdvancedOptions) selectedMode else "BY_REPS"
 						)
 						onSave(phase)

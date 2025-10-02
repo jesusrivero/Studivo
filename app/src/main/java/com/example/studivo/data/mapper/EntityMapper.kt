@@ -1,6 +1,6 @@
 package com.example.studivo.data.mapper
 
-import android.R.attr.order
+
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.example.studivo.domain.model.Phase
@@ -21,7 +21,7 @@ fun Routine.toEntity() = RoutineEntity(
 	id = id,
 	name = name,
 	description = description,
-	color = Color(0xFF2196F3).toArgb(),
+	color = "#FF2196F3", // string HEX por defecto
 	createdAt = createdAt
 )
 
@@ -32,7 +32,7 @@ fun Phase.toEntity() = PhaseEntity(
 	duration = duration,
 	bpm = bpm,
 	timeSignature = timeSignature,
-	color = color.toArgb(),
+	color = color.toHexString(), // Color -> String
 	repetitions = repetitions,
 	bpmIncrement = bpmIncrement,
 	bpmMax = bpmMax,
@@ -47,7 +47,7 @@ fun PhaseEntity.toDomain(): Phase = Phase(
 	duration = duration,
 	bpm = bpm,
 	timeSignature = timeSignature,
-	color = if (color != 0) Color(color) else Color(0xFF2196F3),
+	color = color.fromHex(), // String -> Color
 	repetitions = repetitions,
 	bpmIncrement = bpmIncrement,
 	bpmMax = bpmMax,
@@ -56,3 +56,16 @@ fun PhaseEntity.toDomain(): Phase = Phase(
 )
 
 
+// Convierte Color a String HEX #AARRGGBB
+fun Color.toHexString(): String {
+	return String.format("#%08X", this.toArgb())
+}
+
+// Convierte String HEX a Color
+fun String.fromHex(): Color {
+	return try {
+		Color(android.graphics.Color.parseColor(this))
+	} catch (e: Exception) {
+		Color(0xFF2196F3) // fallback azul si falla
+	}
+}

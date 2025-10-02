@@ -6,6 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.studivo.data.mapper.fromHex
+import com.example.studivo.data.mapper.toHexString
 import com.example.studivo.domain.model.Phase
 import com.example.studivo.domain.model.TempPhaseItem
 import com.example.studivo.domain.usecase.RoutineUseCases
@@ -78,7 +80,10 @@ class RoutineViewModel @Inject constructor(
 	}
 	
 	
-	fun createRoutineWithTempPhases(name: String, onSuccess: () -> Unit) {
+	fun createRoutineWithTempPhases(
+		name: String,
+		onSuccess: () -> Unit
+	) {
 		viewModelScope.launch {
 			val routineId = UUID.randomUUID().toString()
 			val routine = Routine(
@@ -97,7 +102,7 @@ class RoutineViewModel @Inject constructor(
 					duration = temp.duration,
 					bpm = temp.bpmInitial,
 					timeSignature = temp.timeSignature,
-					color = if (temp.color != 0) Color(temp.color) else Color(0xFF2196F3), // default azul
+					color = temp.color.fromHex(), // ✅ String -> Color
 					mode = temp.mode,
 					repetitions = temp.repetitions,
 					bpmIncrement = temp.bpmIncrement,
@@ -113,7 +118,9 @@ class RoutineViewModel @Inject constructor(
 		}
 	}
 	
-
+	
+	
+	
 	
 	fun updateRoutineWithTempPhases(
 		routineId: String,
@@ -147,7 +154,7 @@ class RoutineViewModel @Inject constructor(
 						duration = temp.duration,
 						bpm = temp.bpmInitial,
 						timeSignature = temp.timeSignature,
-						color = Color(temp.color), // ✅
+						color = temp.color.fromHex(), // ✅ String -> Color
 						mode = temp.mode,
 						repetitions = temp.repetitions,
 						bpmIncrement = temp.bpmIncrement,
@@ -194,7 +201,7 @@ class RoutineViewModel @Inject constructor(
 			duration = duration,
 			bpmInitial = bpm,
 			timeSignature = timeSignature,
-			color = color.value.toInt(), // Color a Int
+			color = color.toHexString(),
 			mode = mode,
 			repetitions = repetitions,
 			bpmIncrement = bpmIncrement,

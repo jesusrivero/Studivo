@@ -8,12 +8,13 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.util.UUID
 
+
 @Entity(tableName = "routines")
 data class RoutineEntity(
 	@PrimaryKey val id: String = UUID.randomUUID().toString(),
 	val name: String,
 	val description: String = "",
-	val color: Int = Color(0xFF2196F3).toArgb(),
+	val color: String = "#FF2196F3", // ✅ color como string hex
 	val createdAt: Long = System.currentTimeMillis()
 )
 
@@ -27,9 +28,6 @@ data class RoutineEntity(
 	)],
 	indices = [Index("routineId")]
 )
-
-
-
 data class PhaseEntity(
 	@PrimaryKey val id: String = UUID.randomUUID().toString(),
 	val routineId: String,
@@ -37,7 +35,7 @@ data class PhaseEntity(
 	val duration: Int,
 	val bpm: Int = 0,
 	val timeSignature: String = "4/4",
-	val color: Int = Color(0xFF2196F3).toArgb(),
+	val color: String = "#FF2196F3", // ✅ ahora string
 	val mode: String = "BY_REPS",
 	val repetitions: Int = 1,
 	val bpmIncrement: Int = 0,

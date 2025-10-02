@@ -99,6 +99,8 @@ import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.Switch
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.studivo.data.mapper.fromHex
+import com.example.studivo.data.mapper.toHexString
 import com.example.studivo.domain.model.TempPhaseItem
 import com.example.studivo.domain.viewmodels.RoutineViewModel
 import com.example.studivo.presentation.navegacion.AppRoutes
@@ -286,7 +288,9 @@ fun PhaseBottomSheet(
 	var repetitions by remember { mutableStateOf(existingPhase?.repetitions?.toString() ?: "") }
 	var bpmIncrement by remember { mutableStateOf(existingPhase?.bpmIncrement?.toString() ?: "") }
 	var bpmMax by remember { mutableStateOf(existingPhase?.bpmMax?.toString() ?: "") }
-	var selectedColor by remember { mutableStateOf(existingPhase?.let { Color(it.color) } ?: Color(0xFF2196F3))}
+	var selectedColor by remember {
+		mutableStateOf(existingPhase?.let { it.color.fromHex() } ?: Color(0xFF2196F3))
+	}
 	var selectedMode by remember { mutableStateOf(existingPhase?.mode ?: "BY_REPS") }
 	val isFormValid = phaseName.isNotBlank() && duration.isNotBlank()
 	val timeSignatures = listOf("4/4", "3/4", "2/4", "6/8")
@@ -342,7 +346,7 @@ fun PhaseBottomSheet(
 								bpmIncrement.toIntOrNull() ?: 0 else 0,
 							bpmMax = if (showAdvancedOptions && selectedMode == "UNTIL_BPM_MAX")
 								bpmMax.toIntOrNull() ?: 0 else 0,
-							color = selectedColor.toArgb(),
+							color = selectedColor.toHexString(), // ✅ Color -> String
 							mode = if (showAdvancedOptions) selectedMode else "BY_REPS"
 						)
 						onSave(phase)
@@ -1186,7 +1190,7 @@ private fun EnhancedDraggablePhaseItem(
 					modifier = Modifier
 						.size(48.dp)
 						.clip(RoundedCornerShape(12.dp))
-						.background(Color(phase.color))
+						.background(Color(android.graphics.Color.parseColor(phase.color)))
 				)
 				
 				Spacer(modifier = Modifier.width(16.dp))

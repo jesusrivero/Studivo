@@ -4,14 +4,13 @@ import com.example.studivo.domain.model.entity.PhaseEntity
 import com.example.studivo.presentation.ui.routine.PhaseIcon
 import java.util.UUID
 
-// Modelo temporal para las fases durante la creación
 data class TempPhaseItem(
 	val tempId: String = UUID.randomUUID().toString(),
 	val name: String,
 	val duration: Int,
 	val bpmInitial: Int,
 	val timeSignature: String,
-	val color: Int,
+	val color: String, // ✅ string HEX
 	val mode: String,
 	val repetitions: Int,
 	val bpmIncrement: Int,
@@ -20,17 +19,17 @@ data class TempPhaseItem(
 ) {
 	fun toPhaseEntity(routineId: String): PhaseEntity {
 		return PhaseEntity(
+			id = UUID.randomUUID().toString(),
 			routineId = routineId,
 			name = name,
 			duration = duration,
 			bpm = bpmInitial,
 			timeSignature = timeSignature,
-			color = color,
+			color = color, // ya string
 			mode = mode,
 			repetitions = repetitions,
 			bpmIncrement = bpmIncrement,
-			bpmMax = bpmMax,
-
+			bpmMax = bpmMax
 		)
 	}
 }
