@@ -1,53 +1,48 @@
 package com.example.studivo.presentation.theme
 
-
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.studivo.data.preferences.ThemeDataStore
 
-// 🎵 Colores principales para app musical
-private val MusicPurple = Color(0xFF7C3AED)       // Púrpura principal (creatividad, música)
-private val MusicPurpleDark = Color(0xFF5B21B6)   // Púrpura oscuro
-private val MusicBlue = Color(0xFF2563EB)         // Azul profundo (concentración)
-private val MusicBlueDark = Color(0xFF1E3A8A)     // Azul oscuro
-private val MusicYellow = Color(0xFFFACC15)       // Amarillo (energía, ritmo)
-private val MusicRed = Color(0xFFEF4444)          // Rojo (errores, alertas)
+// 🎵 Colores principales
+// 🎵 Colores principales (Inspiración: concentración, ritmo y precisión)
+private val FocusBlue = Color(0xFF0EA5E9)      // Azul brillante (energía, enfoque)
+private val DeepBlue = Color(0xFF1E3A8A)       // Azul oscuro (estabilidad, profesional)
+private val AccentTurquoise = Color(0xFF14B8A6) // Verde-agua (fluidez, equilibrio)
+private val EnergyAmber = Color(0xFFF59E0B)     // Ámbar cálido (alerta suave)
+private val WarningRed = Color(0xFFDC2626)      // Rojo fuerte (error, atención)
 
-// 🎵 Grises suaves para lectura
-private val NeutralGray50 = Color(0xFFFAFAFA)
-private val NeutralGray100 = Color(0xFFF5F5F5)
-private val NeutralGray200 = Color(0xFFE5E5E5)
-private val NeutralGray800 = Color(0xFF262626)
-private val NeutralGray900 = Color(0xFF171717)
+// 🎵 Grises neutros (equilibrio entre luz y sombra)
+private val NeutralGray50 = Color(0xFFF9FAFB)
+private val NeutralGray100 = Color(0xFFF3F4F6)
+private val NeutralGray200 = Color(0xFFE5E7EB)
+private val NeutralGray800 = Color(0xFF1F2937)
+private val NeutralGray900 = Color(0xFF111827)
+
 
 private val DarkColorScheme = darkColorScheme(
-	primary = MusicPurple,
+	primary = FocusBlue,
 	onPrimary = Color.White,
-	primaryContainer = MusicPurpleDark,
+	primaryContainer = DeepBlue,
 	onPrimaryContainer = Color.White,
 	
-	secondary = MusicBlue,
+	secondary = AccentTurquoise,
 	onSecondary = Color.White,
-	secondaryContainer = MusicBlueDark,
+	secondaryContainer = Color(0xFF134E4A),
 	onSecondaryContainer = Color.White,
 	
-	tertiary = MusicYellow,
+	tertiary = EnergyAmber,
 	onTertiary = Color.Black,
-	tertiaryContainer = Color(0xFFEAB308),
-	onTertiaryContainer = Color.Black,
+	tertiaryContainer = Color(0xFF92400E),
+	onTertiaryContainer = Color.White,
 	
-	error = MusicRed,
+	error = WarningRed,
 	onError = Color.White,
 	errorContainer = Color(0xFF7F1D1D),
 	onErrorContainer = Color.White,
@@ -64,22 +59,22 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-	primary = MusicPurple,
+	primary = FocusBlue,
 	onPrimary = Color.White,
-	primaryContainer = Color(0xFFEDE9FE),
-	onPrimaryContainer = MusicPurpleDark,
+	primaryContainer = Color(0xFFE0F2FE),
+	onPrimaryContainer = DeepBlue,
 	
-	secondary = MusicBlue,
+	secondary = AccentTurquoise,
 	onSecondary = Color.White,
-	secondaryContainer = Color(0xFFDBEAFE),
-	onSecondaryContainer = MusicBlueDark,
+	secondaryContainer = Color(0xFFD1FAE5),
+	onSecondaryContainer = Color(0xFF065F46),
 	
-	tertiary = MusicYellow,
+	tertiary = EnergyAmber,
 	onTertiary = Color.Black,
-	tertiaryContainer = Color(0xFFFEF9C3),
-	onTertiaryContainer = Color(0xFF854D0E),
+	tertiaryContainer = Color(0xFFFEF3C7),
+	onTertiaryContainer = Color(0xFF78350F),
 	
-	error = MusicRed,
+	error = WarningRed,
 	onError = Color.White,
 	errorContainer = Color(0xFFFEE2E2),
 	onErrorContainer = Color(0xFF7F1D1D),
@@ -95,16 +90,20 @@ private val LightColorScheme = lightColorScheme(
 	outlineVariant = Color(0xFFD1D5DB)
 )
 
+
 @Composable
 fun StudivoTheme(
-	darkTheme: Boolean = isSystemInDarkTheme(),
-	dynamicColor: Boolean = false,
+	// Se actualiza automáticamente al cambiar el modo del sistema
+	dynamicColor: Boolean = true,
 	content: @Composable () -> Unit
 ) {
+	val darkTheme = isSystemInDarkTheme() // 🔥 Se sincroniza con el sistema
+	val context = LocalContext.current
+	
 	val colorScheme = when {
 		dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-			val context = LocalContext.current
-			if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+			if (darkTheme) dynamicDarkColorScheme(context)
+			else dynamicLightColorScheme(context)
 		}
 		darkTheme -> DarkColorScheme
 		else -> LightColorScheme
@@ -117,7 +116,7 @@ fun StudivoTheme(
 	)
 }
 
-// 🎵 Tipografía más expresiva para música
+// 🎵 Tipografía expresiva
 private val MusicTypography = Typography(
 	displayLarge = Typography().displayLarge.copy(fontWeight = FontWeight.Bold),
 	headlineLarge = Typography().headlineLarge.copy(fontWeight = FontWeight.Bold),
@@ -127,12 +126,12 @@ private val MusicTypography = Typography(
 	bodyLarge = Typography().bodyLarge.copy(lineHeight = 24.sp)
 )
 
-// 🎵 Extensiones de utilidad
+// 🎨 Utilidades
 object AppColors {
-	val HighlightPurple = MusicPurple
-	val FocusBlue = MusicBlue
-	val EnergyYellow = MusicYellow
-	val WarningRed = MusicRed
+	val Primary = FocusBlue
+	val Secondary = AccentTurquoise
+	val Highlight = EnergyAmber
+	val Error = WarningRed
 	
 	@Composable
 	fun surface(elevation: Int = 0): Color {
@@ -143,4 +142,3 @@ object AppColors {
 		}
 	}
 }
-

@@ -340,7 +340,7 @@ fun EditPhaseBottomSheet(
 		}
 	}
 	
-	val timeSignatures = listOf("4/4", "3/4", "2/4", "6/8")
+	val timeSignatures = listOf("4/4", "3/4", "2/4", "7/8", "6/8", "3/2")
 	val availableColors = listOf(
 		Color(0xFF2196F3),
 		Color(0xFF4CAF50),

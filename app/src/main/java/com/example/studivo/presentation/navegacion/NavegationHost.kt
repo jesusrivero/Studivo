@@ -1,5 +1,6 @@
 package com.example.studivo.presentation.navegacion
 
+
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -7,17 +8,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import androidx.navigation.toRoute
+import com.example.studivo.presentation.navegacion.AppRoutes.RoutinePlaybackScreen
 import com.example.studivo.presentation.splash.SplashScreen
 import com.example.studivo.presentation.ui.MetronomeScreen
 import com.example.studivo.presentation.ui.SettingsScreen
 import com.example.studivo.presentation.ui.StatisticsScreen
 import com.example.studivo.presentation.ui.home.MainScreen
-//import com.example.studivo.presentation.ui.phases.CreateFaseScreen
-//import com.example.studivo.presentation.ui.phases.EditedFaseScreen
 import com.example.studivo.presentation.ui.routine.CreateRoutineScreen
-import com.example.studivo.presentation.ui.routine.DetailRoutineScreen
 import com.example.studivo.presentation.ui.routine.EditedRoutineScreen
+import com.example.studivo.presentation.ui.routine.RoutinePlaybackScreen
 
 @Composable
 fun NavigationHost(
@@ -42,15 +41,11 @@ fun NavigationHost(
 			SettingsScreen(navController = navController)
 		}
 		
-		composable<AppRoutes.StatisticsScreen> {
-			StatisticsScreen(navController = navController)
-		}
 		
-		
-		// 👇 unificada: crear o editar según routineId
 		composable<AppRoutes.CreateRoutineScreen> {
-			CreateRoutineScreen(navController = navController,
-				)
+			CreateRoutineScreen(
+				navController = navController,
+			)
 		}
 		
 		composable(
@@ -61,30 +56,13 @@ fun NavigationHost(
 			EditedRoutineScreen(navController = navController, routineId = routineId)
 		}
 		
-//
-//		composable<AppRoutes.CreateFaseScreen> {
-//			CreateFaseScreen(navController = navController)
-//		}
 		
-		
-		
-//		composable(
-//			route = "${AppRoutes.EditedFaseScreen}/{faseId}",
-//			arguments = listOf(navArgument("faseId") { type = NavType.StringType })
-//		) { backStackEntry ->
-//			val faseId = backStackEntry.arguments?.getString("faseId") ?: ""
-//			EditedFaseScreen(navController = navController, faseId = faseId)
-//		}
-
-		
-		
-		composable<AppRoutes.DetailRoutineScreen> { backStackEntry ->
-			val args = backStackEntry.toRoute<AppRoutes.DetailRoutineScreen>()
-			DetailRoutineScreen(
-				navController = navController,
-				routineId = args.routineId
-			)
+		composable(
+			route = "${AppRoutes.RoutinePlaybackScreen}/{routineId}",
+			arguments = listOf(navArgument("routineId") { type = NavType.StringType })
+		) { backStackEntry ->
+			val routineId = backStackEntry.arguments?.getString("routineId") ?: ""
+			RoutinePlaybackScreen(navController = navController, routineId = routineId)
 		}
-		
 	}
 }

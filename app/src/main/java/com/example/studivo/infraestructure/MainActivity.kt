@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
 			val themeViewModel: ThemeViewModel = hiltViewModel()
 			val isDarkMode by themeViewModel.isDarkMode.collectAsState()
 			
-			StudivoTheme(darkTheme = isDarkMode) {
+			StudivoTheme() {
 				val navController = rememberNavController()
 				NavigationHost(navController = navController)
 			}

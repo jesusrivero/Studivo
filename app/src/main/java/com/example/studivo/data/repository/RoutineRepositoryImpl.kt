@@ -60,4 +60,9 @@ class RoutineRepositoryImpl(
 		return phaseDao.getById(phaseId)?.toDomain()
 	}
 	
+	override suspend fun deleteRoutineWithPhases(routineId: String) {
+		val phases = phaseDao.getPhasesByRoutine(routineId)
+		phases.forEach { phaseDao.deleteById(it.id) }
+		routineDao.deleteById(routineId)
+	}
 }

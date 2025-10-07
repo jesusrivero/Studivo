@@ -46,7 +46,7 @@ fun BottomNavigationBar(
 	
 	val mainRoute = navRoute<AppRoutes.MainScreen>()
 	val metronome = navRoute<AppRoutes.MetronomeScreen>()
-	val stadisticsRoute = navRoute<AppRoutes.StatisticsScreen>()
+//	val stadisticsRoute = navRoute<AppRoutes.StatisticsScreen>()
 	val settingsRoute = navRoute<AppRoutes.SettingsScreen>()
 	
 	val colorScheme = MaterialTheme.colorScheme
@@ -70,9 +70,9 @@ fun BottomNavigationBar(
 				.padding(horizontal = 6.dp, vertical = 4.dp)
 		) {
 			val items = listOf(
+				NavigationItem("Metronomo", R.drawable.ic_metronomo, metronome),
 				NavigationItem("Home", R.drawable.ic_notification, mainRoute),
-				NavigationItem("Metronomo", R.drawable.ic_notification, metronome),
-   			NavigationItem("Estadisticas", R.drawable.ic_notification, stadisticsRoute),
+//   			NavigationItem("Estadisticas", R.drawable.ic_notification, stadisticsRoute),
 				NavigationItem("Ajustes", R.drawable.ic_notification, settingsRoute)
 			)
 			

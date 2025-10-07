@@ -7,6 +7,8 @@ import com.example.studivo.domain.model.Phase
 import com.example.studivo.domain.model.entity.PhaseEntity
 import com.example.studivo.domain.model.entity.RoutineEntity
 import com.example.studivo.presentation.ui.routine.Routine
+import com.example.studivo.presentation.utils.fromHex
+import com.example.studivo.presentation.utils.toHexString
 
 
 fun RoutineEntity.toDomain(phases: List<Phase> = emptyList()) = Routine(
@@ -55,17 +57,3 @@ fun PhaseEntity.toDomain(): Phase = Phase(
 	order = order
 )
 
-
-// Convierte Color a String HEX #AARRGGBB
-fun Color.toHexString(): String {
-	return String.format("#%08X", this.toArgb())
-}
-
-// Convierte String HEX a Color
-fun String.fromHex(): Color {
-	return try {
-		Color(android.graphics.Color.parseColor(this))
-	} catch (e: Exception) {
-		Color(0xFF2196F3) // fallback azul si falla
-	}
-}

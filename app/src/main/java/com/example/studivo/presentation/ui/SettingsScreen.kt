@@ -34,9 +34,9 @@ fun SettingsScreenContent(
 				}
 			)
 		},
-		bottomBar = {
-			BottomNavigationBar(navController)
-		}
+//		bottomBar = {
+//			BottomNavigationBar(navController)
+//		}
 	) { innerPadding ->
 		Box(modifier = Modifier.padding(innerPadding)){
 			Text(text = "hola")

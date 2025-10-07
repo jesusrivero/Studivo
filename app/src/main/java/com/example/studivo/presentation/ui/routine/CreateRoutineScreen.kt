@@ -46,10 +46,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -87,7 +84,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -96,17 +92,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.glance.appwidget.Switch
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.studivo.data.mapper.fromHex
-import com.example.studivo.data.mapper.toHexString
 import com.example.studivo.domain.model.TempPhaseItem
 import com.example.studivo.domain.viewmodels.RoutineViewModel
-import com.example.studivo.presentation.navegacion.AppRoutes
+import com.example.studivo.presentation.utils.fromHex
 import kotlinx.coroutines.delay
 import kotlin.collections.isNotEmpty
 import com.example.studivo.presentation.utils.move
+import com.example.studivo.presentation.utils.toHexString
 import java.util.UUID
 import kotlin.math.ceil
 
@@ -120,6 +114,9 @@ fun CreateRoutineScreen(
 			navController = navController
 		)
 }
+
+
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun CreateRoutineScreenContent(
@@ -283,7 +280,7 @@ fun PhaseBottomSheet(
 	var phaseName by remember { mutableStateOf(existingPhase?.name ?: "") }
 	var duration by remember { mutableStateOf(existingPhase?.duration?.toString() ?: "") }
 	var bpm by remember { mutableStateOf(existingPhase?.bpmInitial?.toString() ?: "") }
-	var selectedTimeSignature by remember { mutableStateOf(existingPhase?.timeSignature ?: "") }
+	var selectedTimeSignature by remember { mutableStateOf(existingPhase?.timeSignature ?: "4/4") }
 	var showAdvancedOptions by remember { mutableStateOf(existingPhase?.let { it.repetitions > 0 || it.bpmMax > it.bpmInitial } ?: false)}
 	var repetitions by remember { mutableStateOf(existingPhase?.repetitions?.toString() ?: "") }
 	var bpmIncrement by remember { mutableStateOf(existingPhase?.bpmIncrement?.toString() ?: "") }
@@ -293,7 +290,7 @@ fun PhaseBottomSheet(
 	}
 	var selectedMode by remember { mutableStateOf(existingPhase?.mode ?: "BY_REPS") }
 	val isFormValid = phaseName.isNotBlank() && duration.isNotBlank()
-	val timeSignatures = listOf("4/4", "3/4", "2/4", "6/8")
+	val timeSignatures = listOf("4/4", "3/4", "2/4", "7/8", "6/8", "3/2")
 	val availableColors = listOf(
 		Color(0xFF2196F3),
 		Color(0xFF4CAF50),
@@ -1233,13 +1230,13 @@ private fun EnhancedDraggablePhaseItem(
 						}
 					}
 					
-					if (phase.timeSignature != "4/4") {
+			
 						Text(
 							text = "Compás: ${phase.timeSignature}",
 							style = MaterialTheme.typography.bodySmall,
 							color = MaterialTheme.colorScheme.onSurfaceVariant
 						)
-					}
+					
 				}
 				
 				AnimatedVisibility(

@@ -12,8 +12,9 @@ interface RoutineRepository {
 	suspend fun deleteRoutine(routineId: String)
 	suspend fun deletePhase(phaseId: String)
 	suspend fun updatePhasesOrder(phases: List<Phase>)
-	suspend fun getRoutineById(routineId: String): Routine?   // nuevo
-	suspend fun updateRoutine(routine: Routine)              // nuevo
+	suspend fun getRoutineById(routineId: String): Routine?
+	suspend fun updateRoutine(routine: Routine)
 	suspend fun updatePhase(phase: Phase)
-	suspend fun getPhaseById(phaseId: String): Phase?   // útil para cargar datos de edición
+	suspend fun getPhaseById(phaseId: String): Phase?
+	suspend fun deleteRoutineWithPhases(routineId: String)
 }

@@ -5,6 +5,7 @@ androidxCoreKtx = "1.17.0"
 androidxWorkRuntimeKtx = "2.9.0"
 charty = "1.0.0"
 
+coilCompose = "2.6.0"
 converterMoshi = "2.9.0"
 coreKtxVersion = "1.13.1"
 coreSplashscreen = "1.0.1"
@@ -48,6 +49,8 @@ reorderable = "3.0.0"
 
 
 [libraries]
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+coil-gif = { module = "io.coil-kt:coil-gif", version.ref = "coilCompose" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 androidx-core-ktx-v1170 = { module = "androidx.core:core-ktx", version.ref = "androidxCoreKtx" }
 androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltWork" }

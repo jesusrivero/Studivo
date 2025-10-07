@@ -12,10 +12,6 @@ class InsertPhaseUseCase(private val repository: RoutineRepository) {
 	suspend operator fun invoke(phase: Phase): String = repository.insertPhase(phase)
 }
 
-class GetAllRoutinesUseCase(private val repository: RoutineRepository) {
-	suspend operator fun invoke(): List<Routine> = repository.getAllRoutines()
-}
-
 class GetPhasesByRoutineUseCase(private val repository: RoutineRepository) {
 	suspend operator fun invoke(routineId: String): List<Phase> = repository.getPhasesByRoutine(routineId)
 }
@@ -49,16 +45,46 @@ class GetPhaseByIdUseCase(private val repository: RoutineRepository) {
 	suspend operator fun invoke(phaseId: String): Phase? = repository.getPhaseById(phaseId)
 }
 
+
+class DeleteRoutineWithPhasesUseCase(private val repository: RoutineRepository) {
+	suspend operator fun invoke(routineId: String) {
+		repository.deleteRoutineWithPhases(routineId)
+	}
+}
+
+//class GetRoutineSummariesUseCase(private val repository: RoutineRepository) {
+//	suspend operator fun invoke(): List<RoutineSummary> {
+//		val routines = repository.getAllRoutines()
+//		return routines.map { routine ->
+//			val phases = repository.getPhasesByRoutine(routine.id)
+//			RoutineSummary(
+//				id = routine.id,
+//				name = routine.name,
+//				description = routine.description,
+//				totalPhases = phases.size,
+//				totalDuration = phases.sumOf { it.duration },
+//				createdAt = routine.createdAt
+//			)
+//		}
+//	}
+	
+	class GetAllRoutinesUseCase(private val repository: RoutineRepository) {
+		suspend operator fun invoke(): List<Routine> = repository.getAllRoutines()
+	}
+
+
 data class RoutineUseCases(
 	val insertRoutine: InsertRoutineUseCase,
 	val insertPhase: InsertPhaseUseCase,
-	val getAllRoutines: GetAllRoutinesUseCase,
 	val getPhasesByRoutine: GetPhasesByRoutineUseCase,
 	val deleteRoutine: DeleteRoutineUseCase,
 	val deletePhase: DeletePhaseUseCase,
 	val updatePhasesOrder: UpdatePhasesOrderUseCase,
-	val getRoutineById: GetRoutineByIdUseCase,         // nuevo
-	val updateRoutine: UpdateRoutineUseCase,           // nuevo
+	val getRoutineById: GetRoutineByIdUseCase,
+	val updateRoutine: UpdateRoutineUseCase,
 	val updatePhase: UpdatePhaseUseCase,
-	val getPhaseById: GetPhaseByIdUseCase              // nuevo
+	val getPhaseById: GetPhaseByIdUseCase,
+	val deleteRoutineWithPhases: DeleteRoutineWithPhasesUseCase,
+//	val getRoutineSummaries: GetRoutineSummariesUseCase,
+	val getAllRoutines: GetAllRoutinesUseCase
 )

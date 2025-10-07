@@ -20,8 +20,6 @@ interface RoutineDao {
 	@Query("DELETE FROM routines WHERE id = :routineId")
 	suspend fun deleteById(routineId: String)
 	
-	
-	
 	@Query("SELECT * FROM routines WHERE id = :routineId")
 	suspend fun getById(routineId: String): RoutineEntity?
 	

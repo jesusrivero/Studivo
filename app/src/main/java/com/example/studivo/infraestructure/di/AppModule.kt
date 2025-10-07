@@ -10,6 +10,7 @@ import com.example.studivo.data.repository.RoutineRepositoryImpl
 import com.example.studivo.domain.repository.RoutineRepository
 import com.example.studivo.domain.usecase.DeletePhaseUseCase
 import com.example.studivo.domain.usecase.DeleteRoutineUseCase
+import com.example.studivo.domain.usecase.DeleteRoutineWithPhasesUseCase
 import com.example.studivo.domain.usecase.GetAllRoutinesUseCase
 import com.example.studivo.domain.usecase.GetPhaseByIdUseCase
 import com.example.studivo.domain.usecase.GetPhasesByRoutineUseCase
@@ -17,6 +18,7 @@ import com.example.studivo.domain.usecase.GetRoutineByIdUseCase
 import com.example.studivo.domain.usecase.InsertPhaseUseCase
 import com.example.studivo.domain.usecase.InsertRoutineUseCase
 import com.example.studivo.domain.usecase.RoutineUseCases
+import com.example.studivo.domain.usecase.StartRoutinePlaybackUseCase
 import com.example.studivo.domain.usecase.UpdatePhaseUseCase
 import com.example.studivo.domain.usecase.UpdatePhasesOrderUseCase
 import com.example.studivo.domain.usecase.UpdateRoutineUseCase
@@ -63,7 +65,6 @@ object AppModule {
 		return RoutineUseCases(
 			insertRoutine = InsertRoutineUseCase(repository),
 			insertPhase = InsertPhaseUseCase(repository),
-			getAllRoutines = GetAllRoutinesUseCase(repository),
 			getPhasesByRoutine = GetPhasesByRoutineUseCase(repository),
 			deleteRoutine = DeleteRoutineUseCase(repository),
 			deletePhase = DeletePhaseUseCase(repository),
@@ -71,11 +72,24 @@ object AppModule {
 			getRoutineById = GetRoutineByIdUseCase(repository),
 			updateRoutine= UpdateRoutineUseCase(repository),
 			updatePhase= UpdatePhaseUseCase(repository),
-			getPhaseById= GetPhaseByIdUseCase(repository))
-		
+			getPhaseById= GetPhaseByIdUseCase(repository),
+			deleteRoutineWithPhases = DeleteRoutineWithPhasesUseCase(repository),
+			getAllRoutines= GetAllRoutinesUseCase(repository))
 	}
 	
 	@Provides @Singleton
 	fun provideThemeDataStore(@ApplicationContext context: Context): ThemeDataStore =
 		ThemeDataStore(context)
+	
+	
+	
+	
+	
+	
+	@Provides
+	fun provideStartRoutinePlaybackUseCase(
+		repository: RoutineRepository
+	): StartRoutinePlaybackUseCase {
+		return StartRoutinePlaybackUseCase(repository)
+	}
 }

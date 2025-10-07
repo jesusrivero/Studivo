@@ -3,27 +3,34 @@ package com.example.studivo.domain.viewmodels
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.studivo.data.mapper.fromHex
-import com.example.studivo.data.mapper.toHexString
 import com.example.studivo.domain.model.Phase
+import com.example.studivo.domain.model.RoutineSummary
 import com.example.studivo.domain.model.TempPhaseItem
 import com.example.studivo.domain.usecase.RoutineUseCases
 import com.example.studivo.presentation.ui.routine.Routine
+import com.example.studivo.presentation.utils.fromHex
+import com.example.studivo.presentation.utils.getTotalDurationMinutes
+import com.example.studivo.presentation.utils.toHexString
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.math.ceil
 
 @HiltViewModel
 class RoutineViewModel @Inject constructor(
 	private val useCases: RoutineUseCases,
 ) : ViewModel() {
 	
+	var routineSummaries by mutableStateOf<List<RoutineSummary>>(emptyList())
+		private set
 	
 	private val _isLoading = MutableStateFlow(false)
 	val isLoading: StateFlow<Boolean> = _isLoading
@@ -40,7 +47,7 @@ class RoutineViewModel @Inject constructor(
 		private set
 	
 	
-	// ✅ Ahora usamos TempPhaseItem para la UI
+
 	var tempPhases by mutableStateOf<List<TempPhaseItem>>(emptyList())
 		private set
 	
@@ -184,14 +191,54 @@ class RoutineViewModel @Inject constructor(
 	}
 	
 	
+	
 	fun loadRoutines() {
 		viewModelScope.launch {
-			routines = useCases.getAllRoutines()
+			_isLoading.value = true
+			try {
+				// 1) Trae todas las rutinas (ligeras, sin fases)
+				val routinesFromDb = useCases.getAllRoutines() // List<Routine>
+				
+				// 2) Para cada rutina trae sus fases en paralelo y arma un Pair<routine, phases>
+				val pairs: List<Pair<Routine, List<Phase>>> = coroutineScope {
+					routinesFromDb.map { routine ->
+						async {
+							val phasesForRoutine = useCases.getPhasesByRoutine(routine.id)
+							Pair(routine, phasesForRoutine)
+						}
+					}.awaitAll()
+				}
+				
+				// 3) Construye los summaries usando getTotalDurationMinutes() por fase
+				val summaries = pairs.map { (routine, phases) ->
+					val totalPhases = phases.size
+					val totalDuration = phases.sumOf { it.getTotalDurationMinutes() } // aquí se cuentan repeticiones
+					RoutineSummary(
+						id = routine.id,
+						name = routine.name,
+						description = routine.description,
+						totalPhases = totalPhases,
+						totalDuration = totalDuration,
+						createdAt = routine.createdAt
+					)
+				}
+				
+				routineSummaries = summaries
+				
+				// opcional: si quieres tener las rutinas completas con sus fases en viewModel.routines:
+				routines = pairs.map { (routine, phases) ->
+					// si Routine es data class y tiene constructor con phases:
+					routine.copy(phases = phases)
+				}
+				
+			} catch (e: Exception) {
+				_errorMessage.value = e.localizedMessage ?: "Error cargando rutinas"
+			} finally {
+				_isLoading.value = false
+			}
 		}
 	}
-	
-	
-	
+
 	
 	
 	fun Phase.toTempPhaseItem(): TempPhaseItem {
@@ -213,28 +260,25 @@ class RoutineViewModel @Inject constructor(
 	
 	fun getPhaseById(phaseId: String, onResult: (Phase?) -> Unit) {
 		viewModelScope.launch {
-			val phase = useCases.getPhaseById(phaseId) // ✅ ya tienes el caso de uso
+			val phase = useCases.getPhaseById(phaseId)
 			onResult(phase)
 		}
 	}
 	
-	
-	fun loadPhaseForEditing(phaseId: String) {
+	fun deleteRoutineWithPhases(routineId: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
 		viewModelScope.launch {
-			val phase = useCases.getPhaseById(phaseId)  // ✅ ahora sí funciona
-			if (phase != null) {
-				tempPhases = listOf(phase.toTempPhaseItem())
-			} else {
-				_errorMessage.value = "Fase no encontrada"
+			try {
+				_isLoading.value = true
+				useCases.deleteRoutineWithPhases(routineId)
+				loadRoutines() // refrescamos lista
+				onSuccess()
+			} catch (e: Exception) {
+				onError(e.localizedMessage ?: "Error eliminando rutina")
+			} finally {
+				_isLoading.value = false
 			}
 		}
 	}
-	
-	fun updatePhase(phase: Phase) {
-		viewModelScope.launch {
-			useCases.updatePhase(phase)
-		}
-	}
-	
-	
 }
+
+
