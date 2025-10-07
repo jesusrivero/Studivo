@@ -370,7 +370,7 @@ fun EnhancedRoutineCard(
 						)
 						Spacer(modifier = Modifier.width(4.dp))
 						Text(
-							text = routine.getFormattedDuration(),
+							text = routine.getFormattedDuration(), // 🔹 aquí se muestra la duración total
 							style = MaterialTheme.typography.bodySmall,
 							color = MaterialTheme.colorScheme.onSurfaceVariant
 						)
@@ -574,7 +574,7 @@ fun RoutineActionsBottomSheet(
 					)
 					Spacer(modifier = Modifier.width(4.dp))
 					Text(
-						text = "20 min",
+						text = routine.getFormattedDuration(), // 🔹 aquí se muestra la duración total
 						style = MaterialTheme.typography.bodyMedium,
 						color = MaterialTheme.colorScheme.onSurfaceVariant
 					)

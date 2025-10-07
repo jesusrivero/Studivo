@@ -17,7 +17,6 @@ data class RoutineEntity(
 	val color: String = "#FF2196F3", // ✅ color como string hex
 	val createdAt: Long = System.currentTimeMillis()
 )
-
 @Entity(
 	tableName = "phases",
 	foreignKeys = [ForeignKey(
@@ -35,7 +34,8 @@ data class PhaseEntity(
 	val duration: Int,
 	val bpm: Int = 0,
 	val timeSignature: String = "4/4",
-	val color: String = "#FF2196F3", // ✅ ahora string
+	val subdivision: String = "QUARTER", // ✨ NUEVO
+	val color: String = "#FF2196F3",
 	val mode: String = "BY_REPS",
 	val repetitions: Int = 1,
 	val bpmIncrement: Int = 0,

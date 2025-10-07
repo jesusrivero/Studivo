@@ -277,7 +277,7 @@ private fun PhaseInfoCard(
 			Text(
 				text = when (phaseMode) {
 					"BY_REPS" -> "POR REPETICIONES"
-					"BY_BPM_MAX" -> "HASTA BPM MÁXIMO"
+					"UNTIL_BPM_MAX" -> "HASTA BPM MÁXIMO"  // ✅ CAMBIO: "BY_BPM_MAX" → "UNTIL_BPM_MAX"
 					else -> "POR TIEMPO"
 				},
 				style = MaterialTheme.typography.labelSmall,

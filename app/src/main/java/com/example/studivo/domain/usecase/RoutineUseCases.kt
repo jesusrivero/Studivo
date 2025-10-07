@@ -52,22 +52,6 @@ class DeleteRoutineWithPhasesUseCase(private val repository: RoutineRepository) 
 	}
 }
 
-//class GetRoutineSummariesUseCase(private val repository: RoutineRepository) {
-//	suspend operator fun invoke(): List<RoutineSummary> {
-//		val routines = repository.getAllRoutines()
-//		return routines.map { routine ->
-//			val phases = repository.getPhasesByRoutine(routine.id)
-//			RoutineSummary(
-//				id = routine.id,
-//				name = routine.name,
-//				description = routine.description,
-//				totalPhases = phases.size,
-//				totalDuration = phases.sumOf { it.duration },
-//				createdAt = routine.createdAt
-//			)
-//		}
-//	}
-	
 	class GetAllRoutinesUseCase(private val repository: RoutineRepository) {
 		suspend operator fun invoke(): List<Routine> = repository.getAllRoutines()
 	}
@@ -85,6 +69,5 @@ data class RoutineUseCases(
 	val updatePhase: UpdatePhaseUseCase,
 	val getPhaseById: GetPhaseByIdUseCase,
 	val deleteRoutineWithPhases: DeleteRoutineWithPhasesUseCase,
-//	val getRoutineSummaries: GetRoutineSummariesUseCase,
 	val getAllRoutines: GetAllRoutinesUseCase
 )

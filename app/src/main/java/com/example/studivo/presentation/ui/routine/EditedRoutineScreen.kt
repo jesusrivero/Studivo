@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.Switch
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.studivo.domain.model.NoteSubdivision
 import com.example.studivo.domain.model.TempPhaseItem
 import com.example.studivo.domain.viewmodels.RoutineViewModel
 import com.example.studivo.presentation.navegacion.AppRoutes
@@ -270,6 +271,10 @@ fun EditedRoutineScreenContent(
 	}
 }
 
+// =====================================
+// CAMBIOS EN EditPhaseBottomSheet
+// =====================================
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditPhaseBottomSheet(
@@ -281,7 +286,7 @@ fun EditPhaseBottomSheet(
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	val scope = rememberCoroutineScope()
 	
-	// 🔹 Fase reactiva desde tempPhases
+	// Fase reactiva desde tempPhases
 	val currentPhase = remember(viewModel.tempPhases, editingPhaseId) {
 		derivedStateOf {
 			editingPhaseId?.let { id ->
@@ -295,6 +300,10 @@ fun EditPhaseBottomSheet(
 	var duration by remember { mutableStateOf("") }
 	var bpm by remember { mutableStateOf("") }
 	var selectedTimeSignature by remember { mutableStateOf("4/4") }
+	
+	// ✨ NUEVO: Estado para subdivisión
+	var selectedSubdivision by remember { mutableStateOf(NoteSubdivision.QUARTER) }
+	
 	var showAdvancedOptions by remember { mutableStateOf(false) }
 	var repetitions by remember { mutableStateOf("") }
 	var bpmIncrement by remember { mutableStateOf("") }
@@ -302,13 +311,14 @@ fun EditPhaseBottomSheet(
 	var selectedColor by remember { mutableStateOf(Color(0xFF2196F3)) }
 	var selectedMode by remember { mutableStateOf("BY_REPS") }
 	
-	// 🔹 Cargar campos locales cuando la fase cambie
+	// Cargar campos locales cuando la fase cambie
 	LaunchedEffect(currentPhase) {
 		currentPhase?.let {
 			phaseName = it.name
 			duration = it.duration.toString()
 			bpm = it.bpmInitial.toString()
 			selectedTimeSignature = it.timeSignature
+			selectedSubdivision = it.getSubdivisionEnum() // ✨ NUEVO
 			repetitions = if (it.repetitions > 0) it.repetitions.toString() else ""
 			bpmIncrement = if (it.bpmIncrement > 0) it.bpmIncrement.toString() else ""
 			bpmMax = if (it.bpmMax > 0) it.bpmMax.toString() else ""
@@ -327,10 +337,11 @@ fun EditPhaseBottomSheet(
 							duration = it.duration,
 							bpmInitial = it.bpm,
 							timeSignature = it.timeSignature,
+							subdivision = it.subdivision.name, // ✨ NUEVO
 							repetitions = it.repetitions,
 							bpmIncrement = it.bpmIncrement,
 							bpmMax = it.bpmMax,
-							color = String.format("#%08X", it.color),
+							color = String.format("#%08X", it.color.toArgb()),
 							mode = it.mode
 						)
 						viewModel.addTempPhase(mapped)
@@ -389,13 +400,14 @@ fun EditPhaseBottomSheet(
 							duration = duration.toIntOrNull() ?: 0,
 							bpmInitial = bpm.toIntOrNull() ?: 0,
 							timeSignature = selectedTimeSignature,
+							subdivision = selectedSubdivision.name, // ✨ NUEVO
 							repetitions = if (showAdvancedOptions && selectedMode == "BY_REPS")
 								repetitions.toIntOrNull() ?: 0 else 0,
 							bpmIncrement = if (showAdvancedOptions)
 								bpmIncrement.toIntOrNull() ?: 0 else 0,
 							bpmMax = if (showAdvancedOptions && selectedMode == "UNTIL_BPM_MAX")
 								bpmMax.toIntOrNull() ?: 0 else 0,
-							color = String.format("#%08X", selectedColor.toArgb()), // ✅ Int → Hex String
+							color = String.format("#%08X", selectedColor.toArgb()),
 							mode = if (showAdvancedOptions) selectedMode else "BY_REPS"
 						)
 						onSave(phase)
@@ -428,6 +440,8 @@ fun EditPhaseBottomSheet(
 						selectedTimeSignature = selectedTimeSignature,
 						onTimeSignatureChange = { selectedTimeSignature = it },
 						timeSignatures = timeSignatures,
+						selectedSubdivision = selectedSubdivision, // ✨ NUEVO
+						onSubdivisionChange = { selectedSubdivision = it }, // ✨ NUEVO
 						selectedColor = selectedColor,
 						onColorChange = { selectedColor = it },
 						availableColors = availableColors
@@ -464,95 +478,94 @@ fun EditPhaseBottomSheet(
 		}
 	}
 }
-
-@Composable
-private fun BasicDataSection(
-	phaseName: String,
-	onPhaseNameChange: (String) -> Unit,
-	duration: String,
-	onDurationChange: (String) -> Unit,
-	bpm: String,
-	onBpmChange: (String) -> Unit,
-	selectedTimeSignature: String,
-	onTimeSignatureChange: (String) -> Unit,
-	timeSignatures: List<String>,
-	selectedColor: Color,
-	onColorChange: (Color) -> Unit,
-	availableColors: List<Color>,
-) {
-	Card(
-		modifier = Modifier.fillMaxWidth(),
-		shape = RoundedCornerShape(16.dp),
-		colors = CardDefaults.cardColors(
-			containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-		)
-	) {
-		Column(
-			modifier = Modifier.padding(20.dp),
-			verticalArrangement = Arrangement.spacedBy(16.dp)
-		) {
-			Text(
-				text = "Datos básicos",
-				style = MaterialTheme.typography.titleMedium,
-				fontWeight = FontWeight.SemiBold,
-				color = MaterialTheme.colorScheme.onSurface
-			)
-			
-			OutlinedTextField(
-				value = phaseName,
-				onValueChange = onPhaseNameChange,
-				modifier = Modifier.fillMaxWidth(),
-				label = { Text("Nombre de la fase") },
-				placeholder = { Text("Ej: Calentamiento") },
-				shape = RoundedCornerShape(12.dp)
-			)
-			
-			Row(
-				modifier = Modifier.fillMaxWidth(),
-				horizontalArrangement = Arrangement.spacedBy(16.dp)
-			) {
-				OutlinedTextField(
-					value = duration,
-					onValueChange = onDurationChange,
-					modifier = Modifier.weight(1f),
-					label = { Text("Duración (min)") },
-					placeholder = { Text("Ej: 10") },
-					keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-					shape = RoundedCornerShape(12.dp)
-				)
-				OutlinedTextField(
-					value = bpm,
-					onValueChange = onBpmChange,
-					modifier = Modifier.weight(1f),
-					label = { Text("BPM inicial") },
-					placeholder = { Text("Ej: 60") },
-					keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-					shape = RoundedCornerShape(12.dp)
-				)
-			}
-			
-			LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-				items(timeSignatures) { timeSignature ->
-					TimeSignatureChip(
-						timeSignature = timeSignature,
-						isSelected = selectedTimeSignature == timeSignature,
-						onSelect = { onTimeSignatureChange(timeSignature) }
-					)
-				}
-			}
-			
-			LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-				items(availableColors) { color ->
-					ColorOption(
-						color = color,
-						isSelected = selectedColor == color,
-						onSelect = { onColorChange(color) }
-					)
-				}
-			}
-		}
-	}
-}
+//@Composable
+//private fun BasicDataSection(
+//	phaseName: String,
+//	onPhaseNameChange: (String) -> Unit,
+//	duration: String,
+//	onDurationChange: (String) -> Unit,
+//	bpm: String,
+//	onBpmChange: (String) -> Unit,
+//	selectedTimeSignature: String,
+//	onTimeSignatureChange: (String) -> Unit,
+//	timeSignatures: List<String>,
+//	selectedColor: Color,
+//	onColorChange: (Color) -> Unit,
+//	availableColors: List<Color>,
+//) {
+//	Card(
+//		modifier = Modifier.fillMaxWidth(),
+//		shape = RoundedCornerShape(16.dp),
+//		colors = CardDefaults.cardColors(
+//			containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+//		)
+//	) {
+//		Column(
+//			modifier = Modifier.padding(20.dp),
+//			verticalArrangement = Arrangement.spacedBy(16.dp)
+//		) {
+//			Text(
+//				text = "Datos básicos",
+//				style = MaterialTheme.typography.titleMedium,
+//				fontWeight = FontWeight.SemiBold,
+//				color = MaterialTheme.colorScheme.onSurface
+//			)
+//
+//			OutlinedTextField(
+//				value = phaseName,
+//				onValueChange = onPhaseNameChange,
+//				modifier = Modifier.fillMaxWidth(),
+//				label = { Text("Nombre de la fase") },
+//				placeholder = { Text("Ej: Calentamiento") },
+//				shape = RoundedCornerShape(12.dp)
+//			)
+//
+//			Row(
+//				modifier = Modifier.fillMaxWidth(),
+//				horizontalArrangement = Arrangement.spacedBy(16.dp)
+//			) {
+//				OutlinedTextField(
+//					value = duration,
+//					onValueChange = onDurationChange,
+//					modifier = Modifier.weight(1f),
+//					label = { Text("Duración (min)") },
+//					placeholder = { Text("Ej: 10") },
+//					keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+//					shape = RoundedCornerShape(12.dp)
+//				)
+//				OutlinedTextField(
+//					value = bpm,
+//					onValueChange = onBpmChange,
+//					modifier = Modifier.weight(1f),
+//					label = { Text("BPM inicial") },
+//					placeholder = { Text("Ej: 60") },
+//					keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+//					shape = RoundedCornerShape(12.dp)
+//				)
+//			}
+//
+//			LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+//				items(timeSignatures) { timeSignature ->
+//					TimeSignatureChip(
+//						timeSignature = timeSignature,
+//						isSelected = selectedTimeSignature == timeSignature,
+//						onSelect = { onTimeSignatureChange(timeSignature) }
+//					)
+//				}
+//			}
+//
+//			LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+//				items(availableColors) { color ->
+//					ColorOption(
+//						color = color,
+//						isSelected = selectedColor == color,
+//						onSelect = { onColorChange(color) }
+//					)
+//				}
+//			}
+//		}
+//	}
+//}
 
 @Composable
 private fun AdvancedOptionsSwitch(

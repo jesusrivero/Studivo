@@ -38,7 +38,12 @@ class MetronomeViewModel @Inject constructor(
 		
 		// Si está sonando, actualizar en tiempo real
 		if (currentState.isPlaying) {
-			metronome?.updateTempo(newBpm, currentState.timeSignature, viewModelScope)
+			metronome?.updateTempo(
+				newBpm,
+				currentState.timeSignature,
+				currentState.subdivision,
+				viewModelScope
+			)
 		}
 	}
 	
@@ -51,7 +56,12 @@ class MetronomeViewModel @Inject constructor(
 		
 		// Si está sonando, actualizar en tiempo real
 		if (currentState.isPlaying) {
-			metronome?.updateTempo(currentState.bpm, newSignature, viewModelScope)
+			metronome?.updateTempo(
+				bpm = currentState.bpm,
+				timeSignature = newSignature,
+				subdivision = currentState.subdivision, // 👈 agrega esto
+				coroutineScope = viewModelScope
+			)
 		}
 	}
 	
@@ -70,6 +80,7 @@ class MetronomeViewModel @Inject constructor(
 			metronome?.start(
 				bpm = currentState.bpm,
 				timeSignature = currentState.timeSignature,
+				subdivision = currentState.subdivision, // ✨ NUEVO
 				coroutineScope = viewModelScope
 			)
 			_uiState.value = currentState.copy(isPlaying = true)

@@ -8,7 +8,7 @@ import com.example.studivo.domain.model.entity.RoutineEntity
 
 
 // --- AppDatabase.kt ---
-@Database(entities = [RoutineEntity::class, PhaseEntity::class], version = 2)
+@Database(entities = [RoutineEntity::class, PhaseEntity::class], version = 4)
 abstract class AppDatabase : RoomDatabase() {
 	abstract fun routineDao(): RoutineDao
 	abstract fun phaseDao(): PhaseDao

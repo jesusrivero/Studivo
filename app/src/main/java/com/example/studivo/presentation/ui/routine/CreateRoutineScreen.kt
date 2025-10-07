@@ -53,6 +53,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -92,8 +93,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.studivo.domain.model.NoteSubdivision
 import com.example.studivo.domain.model.TempPhaseItem
 import com.example.studivo.domain.viewmodels.RoutineViewModel
 import com.example.studivo.presentation.utils.fromHex
@@ -261,6 +264,10 @@ fun CreateRoutineScreenContent(
 	}
 }
 
+// =====================================
+// CAMBIOS EN PhaseBottomSheet
+// =====================================
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PhaseBottomSheet(
@@ -276,12 +283,22 @@ fun PhaseBottomSheet(
 		viewModel.tempPhases.find { it.tempId == id }
 	}
 	
-	
+	// Estados del formulario
 	var phaseName by remember { mutableStateOf(existingPhase?.name ?: "") }
 	var duration by remember { mutableStateOf(existingPhase?.duration?.toString() ?: "") }
 	var bpm by remember { mutableStateOf(existingPhase?.bpmInitial?.toString() ?: "") }
 	var selectedTimeSignature by remember { mutableStateOf(existingPhase?.timeSignature ?: "4/4") }
-	var showAdvancedOptions by remember { mutableStateOf(existingPhase?.let { it.repetitions > 0 || it.bpmMax > it.bpmInitial } ?: false)}
+	
+	// ✨ NUEVO: Estado para subdivisión
+	var selectedSubdivision by remember {
+		mutableStateOf(
+			existingPhase?.getSubdivisionEnum() ?: NoteSubdivision.QUARTER
+		)
+	}
+	
+	var showAdvancedOptions by remember {
+		mutableStateOf(existingPhase?.let { it.repetitions > 0 || it.bpmMax > it.bpmInitial } ?: false)
+	}
 	var repetitions by remember { mutableStateOf(existingPhase?.repetitions?.toString() ?: "") }
 	var bpmIncrement by remember { mutableStateOf(existingPhase?.bpmIncrement?.toString() ?: "") }
 	var bpmMax by remember { mutableStateOf(existingPhase?.bpmMax?.toString() ?: "") }
@@ -289,6 +306,7 @@ fun PhaseBottomSheet(
 		mutableStateOf(existingPhase?.let { it.color.fromHex() } ?: Color(0xFF2196F3))
 	}
 	var selectedMode by remember { mutableStateOf(existingPhase?.mode ?: "BY_REPS") }
+	
 	val isFormValid = phaseName.isNotBlank() && duration.isNotBlank()
 	val timeSignatures = listOf("4/4", "3/4", "2/4", "7/8", "6/8", "3/2")
 	val availableColors = listOf(
@@ -313,7 +331,7 @@ fun PhaseBottomSheet(
 				.fillMaxSize()
 				.padding(horizontal = 16.dp)
 		) {
-		
+			// Header con botón guardar
 			Row(
 				modifier = Modifier
 					.fillMaxWidth()
@@ -337,14 +355,15 @@ fun PhaseBottomSheet(
 							duration = duration.toIntOrNull() ?: 0,
 							bpmInitial = bpm.toIntOrNull() ?: 0,
 							timeSignature = selectedTimeSignature,
+							subdivision = selectedSubdivision.name,
 							repetitions = if (showAdvancedOptions && selectedMode == "BY_REPS")
 								repetitions.toIntOrNull() ?: 0 else 0,
 							bpmIncrement = if (showAdvancedOptions)
 								bpmIncrement.toIntOrNull() ?: 0 else 0,
-							bpmMax = if (showAdvancedOptions && selectedMode == "UNTIL_BPM_MAX")
+							bpmMax = if (showAdvancedOptions && selectedMode == "UNTIL_BPM_MAX")  // ✅ Verifica que sea UNTIL_BPM_MAX
 								bpmMax.toIntOrNull() ?: 0 else 0,
-							color = selectedColor.toHexString(), // ✅ Color -> String
-							mode = if (showAdvancedOptions) selectedMode else "BY_REPS"
+							color = selectedColor.toHexString(),
+							mode = if (showAdvancedOptions) selectedMode else "BY_REPS",  // ✅ selectedMode debe ser "UNTIL_BPM_MAX"
 						)
 						onSave(phase)
 					}
@@ -359,12 +378,12 @@ fun PhaseBottomSheet(
 				}
 			}
 			
-			
+			// Contenido scrolleable
 			LazyColumn(
 				verticalArrangement = Arrangement.spacedBy(24.dp),
 				contentPadding = PaddingValues(bottom = 32.dp)
 			) {
-			
+				// Datos básicos con subdivisión
 				item {
 					BasicDataSection(
 						phaseName = phaseName,
@@ -376,13 +395,15 @@ fun PhaseBottomSheet(
 						selectedTimeSignature = selectedTimeSignature,
 						onTimeSignatureChange = { selectedTimeSignature = it },
 						timeSignatures = timeSignatures,
+						selectedSubdivision = selectedSubdivision, // ✨ NUEVO
+						onSubdivisionChange = { selectedSubdivision = it }, // ✨ NUEVO
 						selectedColor = selectedColor,
 						onColorChange = { selectedColor = it },
 						availableColors = availableColors
 					)
 				}
 				
-			
+				// Resto del código permanece igual...
 				item {
 					AdvancedOptionsSwitch(
 						isEnabled = showAdvancedOptions,
@@ -390,7 +411,6 @@ fun PhaseBottomSheet(
 						switchEnabled = bpm.isNotBlank()
 					)
 				}
-				
 				
 				if (showAdvancedOptions) {
 					item {
@@ -414,7 +434,7 @@ fun PhaseBottomSheet(
 }
 
 @Composable
-private fun BasicDataSection(
+fun BasicDataSection(
 	phaseName: String,
 	onPhaseNameChange: (String) -> Unit,
 	duration: String,
@@ -424,6 +444,8 @@ private fun BasicDataSection(
 	selectedTimeSignature: String,
 	onTimeSignatureChange: (String) -> Unit,
 	timeSignatures: List<String>,
+	selectedSubdivision: NoteSubdivision, // ✨ NUEVO
+	onSubdivisionChange: (NoteSubdivision) -> Unit, // ✨ NUEVO
 	selectedColor: Color,
 	onColorChange: (Color) -> Unit,
 	availableColors: List<Color>,
@@ -479,23 +501,56 @@ private fun BasicDataSection(
 				)
 			}
 			
-			LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-				items(timeSignatures) { timeSignature ->
-					TimeSignatureChip(
-						timeSignature = timeSignature,
-						isSelected = selectedTimeSignature == timeSignature,
-						onSelect = { onTimeSignatureChange(timeSignature) }
-					)
+			// Selector de compás
+			Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+				Text(
+					text = "Compás",
+					style = MaterialTheme.typography.bodyMedium,
+					fontWeight = FontWeight.Medium
+				)
+				LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+					items(timeSignatures) { timeSignature ->
+						TimeSignatureChip(
+							timeSignature = timeSignature,
+							isSelected = selectedTimeSignature == timeSignature,
+							onSelect = { onTimeSignatureChange(timeSignature) }
+						)
+					}
 				}
 			}
 			
-			LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-				items(availableColors) { color ->
-					ColorOption(
-						color = color,
-						isSelected = selectedColor == color,
-						onSelect = { onColorChange(color) }
-					)
+			// ✨ NUEVO: Selector de subdivisión
+			Divider(
+				color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+				thickness = 1.dp
+			)
+			
+			SubdivisionSelector(
+				selectedSubdivision = selectedSubdivision,
+				onSubdivisionChange = onSubdivisionChange,
+				modifier = Modifier.fillMaxWidth()
+			)
+			
+			Divider(
+				color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+				thickness = 1.dp
+			)
+			
+			// Selector de color
+			Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+				Text(
+					text = "Color de la fase",
+					style = MaterialTheme.typography.bodyMedium,
+					fontWeight = FontWeight.Medium
+				)
+				LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+					items(availableColors) { color ->
+						ColorOption(
+							color = color,
+							isSelected = selectedColor == color,
+							onSelect = { onColorChange(color) }
+						)
+					}
 				}
 			}
 		}
@@ -1182,15 +1237,17 @@ private fun EnhancedDraggablePhaseItem(
 				
 				Spacer(modifier = Modifier.width(12.dp))
 				
-				// Color indicator
 				Box(
 					modifier = Modifier
 						.size(48.dp)
 						.clip(RoundedCornerShape(12.dp))
 						.background(Color(android.graphics.Color.parseColor(phase.color)))
 				)
-				
+
 				Spacer(modifier = Modifier.width(16.dp))
+
+				
+				
 				
 				Column(modifier = Modifier.weight(1f)) {
 					Text(
@@ -1202,6 +1259,7 @@ private fun EnhancedDraggablePhaseItem(
 					
 					Spacer(modifier = Modifier.height(4.dp))
 					
+					// Info de duración y BPM
 					Row {
 						Text(
 							text = "${phase.duration} min",
@@ -1230,14 +1288,102 @@ private fun EnhancedDraggablePhaseItem(
 						}
 					}
 					
-			
+					Spacer(modifier = Modifier.height(2.dp))
+					
+					// ✨ NUEVO: Mostrar compás y subdivisión
+					Row(
+						horizontalArrangement = Arrangement.spacedBy(8.dp),
+						verticalAlignment = Alignment.CenterVertically
+					) {
 						Text(
 							text = "Compás: ${phase.timeSignature}",
 							style = MaterialTheme.typography.bodySmall,
 							color = MaterialTheme.colorScheme.onSurfaceVariant
 						)
-					
+						
+						// Chip de subdivisión
+						val subdivision = phase.getSubdivisionEnum()
+						Surface(
+							shape = RoundedCornerShape(6.dp),
+							color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+						) {
+							Row(
+								modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+								horizontalArrangement = Arrangement.spacedBy(3.dp),
+								verticalAlignment = Alignment.CenterVertically
+							) {
+								Text(
+									text = subdivision.musicSymbol,
+									style = MaterialTheme.typography.labelSmall,
+									fontSize = 10.sp,
+									color = MaterialTheme.colorScheme.onSecondaryContainer
+								)
+								Text(
+									text = subdivision.displayName,
+									style = MaterialTheme.typography.labelSmall,
+									fontSize = 10.sp,
+									color = MaterialTheme.colorScheme.onSecondaryContainer
+								)
+							}
+						}
+					}
 				}
+//				// Color indicator
+//				Box(
+//					modifier = Modifier
+//						.size(48.dp)
+//						.clip(RoundedCornerShape(12.dp))
+//						.background(Color(android.graphics.Color.parseColor(phase.color)))
+//				)
+//
+//				Spacer(modifier = Modifier.width(16.dp))
+//
+//				Column(modifier = Modifier.weight(1f)) {
+//					Text(
+//						text = phase.name,
+//						style = MaterialTheme.typography.titleMedium,
+//						fontWeight = FontWeight.SemiBold,
+//						color = MaterialTheme.colorScheme.onSurface
+//					)
+//
+//					Spacer(modifier = Modifier.height(4.dp))
+//
+//					Row {
+//						Text(
+//							text = "${phase.duration} min",
+//							style = MaterialTheme.typography.bodyMedium,
+//							color = MaterialTheme.colorScheme.primary
+//						)
+//
+//						Text(
+//							text = " • ",
+//							style = MaterialTheme.typography.bodyMedium,
+//							color = MaterialTheme.colorScheme.onSurfaceVariant
+//						)
+//
+//						Text(
+//							text = "${phase.bpmInitial} BPM",
+//							style = MaterialTheme.typography.bodyMedium,
+//							color = MaterialTheme.colorScheme.primary
+//						)
+//
+//						if (phase.mode == "UNTIL_BPM_MAX" && phase.bpmMax > phase.bpmInitial) {
+//							Text(
+//								text = " → ${phase.bpmMax}",
+//								style = MaterialTheme.typography.bodyMedium,
+//								color = MaterialTheme.colorScheme.secondary
+//							)
+//						}
+//					}
+//
+//
+//						Text(
+//							text = "Compás: ${phase.timeSignature}",
+//							style = MaterialTheme.typography.bodySmall,
+//							color = MaterialTheme.colorScheme.onSurfaceVariant
+//						)
+//
+//				}
 				
 				AnimatedVisibility(
 					visible = dragDropState.isDragging,
@@ -1386,3 +1532,132 @@ enum class PhaseIcon {
 	MAIN,
 	COOLDOWN
 }
+
+
+@Composable
+fun SubdivisionSelector(
+	selectedSubdivision: NoteSubdivision,
+	onSubdivisionChange: (NoteSubdivision) -> Unit,
+	modifier: Modifier = Modifier
+) {
+	Column(
+		modifier = modifier,
+		verticalArrangement = Arrangement.spacedBy(8.dp)
+	) {
+		Text(
+			text = "Subdivisión del beat",
+			style = MaterialTheme.typography.bodyMedium,
+			fontWeight = FontWeight.SemiBold,
+			color = MaterialTheme.colorScheme.onSurface
+		)
+		
+		LazyRow(
+			horizontalArrangement = Arrangement.spacedBy(8.dp),
+			contentPadding = PaddingValues(vertical = 2.dp)
+		) {
+			items(NoteSubdivision.entries) { subdivision ->
+				SubdivisionCard(
+					subdivision = subdivision,
+					isSelected = selectedSubdivision == subdivision,
+					onSelect = { onSubdivisionChange(subdivision) }
+				)
+			}
+		}
+		
+		val beatsInfo = when (selectedSubdivision) {
+			NoteSubdivision.QUARTER -> "1 pulso por beat"
+			NoteSubdivision.EIGHTH -> "2 pulsos por beat"
+			NoteSubdivision.TRIPLET -> "3 pulsos por beat (tresillo)"
+			NoteSubdivision.SIXTEENTH -> "4 pulsos por beat"
+		}
+		
+		Text(
+			text = "ℹ️ $beatsInfo",
+			style = MaterialTheme.typography.labelSmall,
+			color = MaterialTheme.colorScheme.onSurfaceVariant,
+			modifier = Modifier.padding(start = 4.dp)
+		)
+	}
+}
+
+/**
+ * Tarjeta individual para cada subdivisión (versión compacta)
+ */
+@Composable
+private fun SubdivisionCard(
+	subdivision: NoteSubdivision,
+	isSelected: Boolean,
+	onSelect: () -> Unit
+) {
+	Card(
+		modifier = Modifier
+			.width(80.dp)
+			.height(50.dp)
+			.clickable { onSelect() },
+		shape = RoundedCornerShape(12.dp),
+		colors = CardDefaults.cardColors(
+			containerColor = if (isSelected)
+				MaterialTheme.colorScheme.primaryContainer
+			else
+				MaterialTheme.colorScheme.surface
+		),
+		border = if (isSelected)
+			BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary)
+		else null,
+		elevation = CardDefaults.cardElevation(
+			defaultElevation = if (isSelected) 3.dp else 1.dp
+		)
+	) {
+		Column(
+			modifier = Modifier
+				.fillMaxSize()
+				.padding(8.dp),
+			horizontalAlignment = Alignment.CenterHorizontally,
+			verticalArrangement = Arrangement.SpaceBetween
+		) {
+			// Símbolo musical más pequeño
+			Text(
+				text = subdivision.musicSymbol,
+				fontSize = 24.sp,
+				color = if (isSelected)
+					MaterialTheme.colorScheme.primary
+				else
+					MaterialTheme.colorScheme.onSurface
+			)
+//
+//			// Nombre
+//			Text(
+//				text = subdivision.displayName,
+//				style = MaterialTheme.typography.labelMedium,
+//				fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+//				color = if (isSelected)
+//					MaterialTheme.colorScheme.primary
+//				else
+//					MaterialTheme.colorScheme.onSurface,
+//				textAlign = TextAlign.Center,
+//				lineHeight = 14.sp
+//			)
+//
+//			// Pulsos (más compacto)
+//			Surface(
+//				shape = RoundedCornerShape(6.dp),
+//				color = if (isSelected)
+//					MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+//				else
+//					MaterialTheme.colorScheme.surfaceVariant
+//			) {
+//				Text(
+//					text = "${subdivision.clicksPerBeat}x",
+//					modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+//					style = MaterialTheme.typography.labelSmall,
+//					fontWeight = FontWeight.SemiBold,
+//					color = if (isSelected)
+//						MaterialTheme.colorScheme.primary
+//					else
+//						MaterialTheme.colorScheme.onSurfaceVariant
+//				)
+		
+		}
+	}
+}
+

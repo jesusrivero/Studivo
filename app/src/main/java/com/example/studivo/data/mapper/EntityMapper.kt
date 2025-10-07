@@ -3,6 +3,7 @@ package com.example.studivo.data.mapper
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import com.example.studivo.domain.model.NoteSubdivision
 import com.example.studivo.domain.model.Phase
 import com.example.studivo.domain.model.entity.PhaseEntity
 import com.example.studivo.domain.model.entity.RoutineEntity
@@ -34,6 +35,7 @@ fun Phase.toEntity() = PhaseEntity(
 	duration = duration,
 	bpm = bpm,
 	timeSignature = timeSignature,
+	subdivision = subdivision.name, // ✨ Enum -> String
 	color = color.toHexString(), // Color -> String
 	repetitions = repetitions,
 	bpmIncrement = bpmIncrement,
@@ -49,6 +51,7 @@ fun PhaseEntity.toDomain(): Phase = Phase(
 	duration = duration,
 	bpm = bpm,
 	timeSignature = timeSignature,
+	subdivision = NoteSubdivision.fromName(subdivision), // ✨ String -> Enum
 	color = color.fromHex(), // String -> Color
 	repetitions = repetitions,
 	bpmIncrement = bpmIncrement,

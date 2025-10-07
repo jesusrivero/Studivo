@@ -12,6 +12,7 @@ data class RoutinePlaybackState(
 	val timeRemaining: Int = 0, // en segundos
 	val isPaused: Boolean = false,
 	val isCompleted: Boolean = false,
+	val subdivision: NoteSubdivision = NoteSubdivision.QUARTER,
 	val totalElapsedTime: Int = 0, // tiempo total transcurrido en segundos
 	val countdown: Int = 0,           // 🔹 Valor actual de la cuenta regresiva
 	val isCountingDown: Boolean = false // 🔹 Si estamos en cuenta regresiva
@@ -34,7 +35,7 @@ data class RoutinePlaybackState(
 		get() = currentPhase?.let { phase ->
 			when (phase.mode) {
 				"BY_REPS" -> currentRepetition < phase.repetitions
-				"BY_BPM_MAX" -> {
+				"UNTIL_BPM_MAX" -> {  // ✅ CAMBIO: "BY_BPM_MAX" → "UNTIL_BPM_MAX"
 					val nextBPM = phase.calculateCurrentBPM(currentRepetition + 1)
 					nextBPM <= phase.bpmMax
 				}

@@ -11,7 +11,6 @@ import com.example.studivo.domain.model.TempPhaseItem
 import com.example.studivo.domain.usecase.RoutineUseCases
 import com.example.studivo.presentation.ui.routine.Routine
 import com.example.studivo.presentation.utils.fromHex
-import com.example.studivo.presentation.utils.getTotalDurationMinutes
 import com.example.studivo.presentation.utils.toHexString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -109,6 +108,7 @@ class RoutineViewModel @Inject constructor(
 					duration = temp.duration,
 					bpm = temp.bpmInitial,
 					timeSignature = temp.timeSignature,
+					subdivision = temp.getSubdivisionEnum(), // ✨ NUEVO
 					color = temp.color.fromHex(), // ✅ String -> Color
 					mode = temp.mode,
 					repetitions = temp.repetitions,
@@ -161,6 +161,7 @@ class RoutineViewModel @Inject constructor(
 						duration = temp.duration,
 						bpm = temp.bpmInitial,
 						timeSignature = temp.timeSignature,
+						subdivision = temp.getSubdivisionEnum(), // ✨ NUEVO
 						color = temp.color.fromHex(), // ✅ String -> Color
 						mode = temp.mode,
 						repetitions = temp.repetitions,
@@ -196,10 +197,10 @@ class RoutineViewModel @Inject constructor(
 		viewModelScope.launch {
 			_isLoading.value = true
 			try {
-				// 1) Trae todas las rutinas (ligeras, sin fases)
+				// 1️⃣ Trae todas las rutinas (sin fases)
 				val routinesFromDb = useCases.getAllRoutines() // List<Routine>
 				
-				// 2) Para cada rutina trae sus fases en paralelo y arma un Pair<routine, phases>
+				// 2️⃣ Para cada rutina trae sus fases en paralelo
 				val pairs: List<Pair<Routine, List<Phase>>> = coroutineScope {
 					routinesFromDb.map { routine ->
 						async {
@@ -209,10 +210,13 @@ class RoutineViewModel @Inject constructor(
 					}.awaitAll()
 				}
 				
-				// 3) Construye los summaries usando getTotalDurationMinutes() por fase
+				// Actualiza esta sección en tu función loadRoutines()
 				val summaries = pairs.map { (routine, phases) ->
 					val totalPhases = phases.size
-					val totalDuration = phases.sumOf { it.getTotalDurationMinutes() } // aquí se cuentan repeticiones
+					val totalDuration = phases.sumOf { phase ->
+						val reps = phase.calculateRepetitions()
+						phase.duration * reps
+					}
 					RoutineSummary(
 						id = routine.id,
 						name = routine.name,
@@ -225,9 +229,8 @@ class RoutineViewModel @Inject constructor(
 				
 				routineSummaries = summaries
 				
-				// opcional: si quieres tener las rutinas completas con sus fases en viewModel.routines:
+				// 4️⃣ Opcional: almacenar rutinas completas con sus fases
 				routines = pairs.map { (routine, phases) ->
-					// si Routine es data class y tiene constructor con phases:
 					routine.copy(phases = phases)
 				}
 				
@@ -239,6 +242,7 @@ class RoutineViewModel @Inject constructor(
 		}
 	}
 
+
 	
 	
 	fun Phase.toTempPhaseItem(): TempPhaseItem {
@@ -248,6 +252,7 @@ class RoutineViewModel @Inject constructor(
 			duration = duration,
 			bpmInitial = bpm,
 			timeSignature = timeSignature,
+			subdivision = subdivision.name, // ✨ NUEVO
 			color = color.toHexString(),
 			mode = mode,
 			repetitions = repetitions,
@@ -281,4 +286,21 @@ class RoutineViewModel @Inject constructor(
 	}
 }
 
+// Agregá esta función helper en tu RoutineViewModel
+private fun Phase.calculateRepetitions(): Int {
+	return when {
+		// Modo BY_REPS: usar las repeticiones definidas
+		mode == "BY_REPS" && repetitions > 0 -> repetitions
+		
+		// Modo UNTIL_BPM_MAX: calcular repeticiones necesarias
+		mode == "UNTIL_BPM_MAX" && bpmIncrement > 0 && bpmMax > bpm -> {
+			// Fórmula: (bpmMax - bpmInicial) / incremento + 1
+			val neededRepetitions = ((bpmMax - bpm) / bpmIncrement) + 1
+			neededRepetitions.coerceAtLeast(1)
+		}
+		
+		// Caso por defecto: 1 repetición
+		else -> 1
+	}
+}
 

@@ -10,26 +10,15 @@ data class TempPhaseItem(
 	val duration: Int,
 	val bpmInitial: Int,
 	val timeSignature: String,
-	val color: String, // ✅ string HEX
+	val subdivision: String = "QUARTER", // ✨ NUEVO
+	val color: String,
 	val mode: String,
 	val repetitions: Int,
 	val bpmIncrement: Int,
 	val bpmMax: Int,
 	val routineId: String = ""
 ) {
-	fun toPhaseEntity(routineId: String): PhaseEntity {
-		return PhaseEntity(
-			id = UUID.randomUUID().toString(),
-			routineId = routineId,
-			name = name,
-			duration = duration,
-			bpm = bpmInitial,
-			timeSignature = timeSignature,
-			color = color, // ya string
-			mode = mode,
-			repetitions = repetitions,
-			bpmIncrement = bpmIncrement,
-			bpmMax = bpmMax
-		)
+	fun getSubdivisionEnum(): NoteSubdivision {
+		return NoteSubdivision.fromName(subdivision)
 	}
 }

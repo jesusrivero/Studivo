@@ -134,9 +134,9 @@ class RoutinePlaybackViewModel @Inject constructor(
 		}
 	}
 	
+	
 	private fun handleNextPhase(state: RoutinePlaybackState) {
 		if (!state.hasNextPhase) return
-		
 		val nextPhaseIndex = state.currentPhaseIndex + 1
 		val nextPhase = state.phases[nextPhaseIndex]
 		
@@ -148,24 +148,19 @@ class RoutinePlaybackViewModel @Inject constructor(
 		
 		_uiState.value = PlaybackUiState.Playing(newState)
 		
-		// 🔹 Solo reiniciamos el timer
 		startTimer()
-		
-		// 🔹 Actualizamos el BPM/firma del metrónomo sin reiniciar los beats
-		updateMetronome(newState)
+		startMetronome(newState) // ✅ ahora respeta fases sin BPM
 	}
-
-
+	
 	
 	private fun handleNextRepetition(state: RoutinePlaybackState) {
 		if (!state.hasNextRepetition) return
-		
 		val currentPhase = state.currentPhase ?: return
 		val nextRepetition = state.currentRepetition + 1
 		
 		val canProceed = when (currentPhase.mode) {
 			"BY_REPS" -> nextRepetition <= currentPhase.repetitions
-			"BY_BPM_MAX" -> {
+			"UNTIL_BPM_MAX" -> {  // ✅ CAMBIO: "BY_BPM_MAX" → "UNTIL_BPM_MAX"
 				val nextBPM = currentPhase.calculateCurrentBPM(nextRepetition)
 				nextBPM <= currentPhase.bpmMax && currentPhase.bpmMax > 0
 			}
@@ -181,12 +176,37 @@ class RoutinePlaybackViewModel @Inject constructor(
 		
 		_uiState.value = PlaybackUiState.Playing(newState)
 		
-		// 🔹 Solo reiniciamos el timer
 		startTimer()
-		
-		// 🔹 Actualizamos el BPM/firma del metrónomo sin reiniciar beats
-		updateMetronome(newState)
+		startMetronome(newState)
 	}
+	
+//	private fun handleNextRepetition(state: RoutinePlaybackState) {
+//		if (!state.hasNextRepetition) return
+//		val currentPhase = state.currentPhase ?: return
+//		val nextRepetition = state.currentRepetition + 1
+//
+//		val canProceed = when (currentPhase.mode) {
+//			"BY_REPS" -> nextRepetition <= currentPhase.repetitions
+//			"BY_BPM_MAX" -> {
+//				val nextBPM = currentPhase.calculateCurrentBPM(nextRepetition)
+//				nextBPM <= currentPhase.bpmMax && currentPhase.bpmMax > 0
+//			}
+//			else -> false
+//		}
+//
+//		if (!canProceed) return
+//
+//		val newState = state.copy(
+//			currentRepetition = nextRepetition,
+//			timeRemaining = currentPhase.duration * 60
+//		)
+//
+//		_uiState.value = PlaybackUiState.Playing(newState)
+//
+//		startTimer()
+//		startMetronome(newState) // ✅ ahora respeta fases sin BPM
+//	}
+
 
 	
 	private fun handleRepeatPhase(state: RoutinePlaybackState) {
@@ -194,11 +214,8 @@ class RoutinePlaybackViewModel @Inject constructor(
 		val newState = state.copy(timeRemaining = currentPhase.duration * 60)
 		_uiState.value = PlaybackUiState.Playing(newState)
 		
-		// 🔹 Solo reiniciamos el timer
 		startTimer()
-		
-		// 🔹 Actualizamos el BPM/firma del metrónomo sin reiniciar beats
-		updateMetronome(newState)
+		startMetronome(newState) // ✅ ahora respeta fases sin BPM
 	}
 	
 
@@ -225,27 +242,43 @@ class RoutinePlaybackViewModel @Inject constructor(
 		_uiState.value = PlaybackUiState.Playing(newState)
 	}
 	
-	// 🎵 Metronome controls
+	
+	// 🎵 Metronome controls robustos
 	private fun startMetronome(state: RoutinePlaybackState) {
 		val phase = state.currentPhase ?: return
-		if (phase.bpm > 0 && !state.isPaused) {
-			metronome?.start(
-				bpm = state.currentBPM,
-				timeSignature = phase.timeSignature,
-				coroutineScope = viewModelScope
-			)
+		
+		if (state.isPaused || phase.bpm <= 0) {
+			// 🔹 Si está pausado o fase sin BPM, detenemos el metrónomo
+			metronome?.stop()
+			return
 		}
+		
+		// 🔹 Inicia metrónomo con BPM, compás y subdivisión
+		metronome?.start(
+			bpm = state.currentBPM,
+			timeSignature = phase.timeSignature,
+			subdivision = phase.subdivision,
+			coroutineScope = viewModelScope
+		)
 	}
+
 	
 	private fun updateMetronome(state: RoutinePlaybackState) {
 		val phase = state.currentPhase ?: return
-		if (phase.bpm > 0 && !state.isPaused) {
-			metronome?.updateTempo(
-				bpm = state.currentBPM,
-				timeSignature = phase.timeSignature,
-				coroutineScope = viewModelScope
-			)
+		
+		if (state.isPaused || phase.bpm <= 0) {
+			// 🔹 Detener metrónomo si no hay BPM o la rutina está pausada
+			metronome?.stop()
+			return
 		}
+		
+		// 🔹 Actualiza solo si la fase tiene BPM y no está pausada
+		metronome?.updateTempo(
+			bpm = state.currentBPM,
+			timeSignature = phase.timeSignature,
+			subdivision = phase.subdivision,
+			coroutineScope = viewModelScope
+		)
 	}
 	
 	// ⏱ Timer preciso con SystemClock
