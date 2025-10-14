@@ -3,7 +3,7 @@ package com.example.studivo.presentation.utils
 import com.example.studivo.domain.model.Phase
 import kotlin.math.ceil
 
-// devuelve cuántas repeticiones efectivas tendrá esta fase según su modo
+
 fun Phase.effectiveRepetitions(): Int {
 	return when (mode) {
 		"BY_REPS" -> repetitions.coerceAtLeast(1)
@@ -18,7 +18,6 @@ fun Phase.effectiveRepetitions(): Int {
 	}
 }
 
-// duración total en minutos que ocupa la fase considerando repeticiones
 fun Phase.getTotalDurationMinutes(): Int {
 	val reps = effectiveRepetitions()
 	return duration * reps

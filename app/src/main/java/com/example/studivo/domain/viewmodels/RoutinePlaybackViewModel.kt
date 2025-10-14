@@ -1,15 +1,20 @@
 package com.example.studivo.domain.viewmodels
 
+
+import PlaybackEvent
+import PlaybackUiState
+import RoutinePlaybackState
 import android.content.Context
 import android.os.SystemClock
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.studivo.domain.model.PlaybackEvent
-import com.example.studivo.domain.model.PlaybackUiState
-import com.example.studivo.domain.model.RoutinePlaybackState
-import com.example.studivo.domain.model.calculateCurrentBPM
+import calculateCurrentBPM
+import com.example.studivo.domain.model.RoutineProgress
 import com.example.studivo.domain.services.Metronome
+import com.example.studivo.domain.usecase.GetRoutineProgressUseCase
+import com.example.studivo.domain.usecase.SaveRoutineProgressUseCase
 import com.example.studivo.domain.usecase.StartRoutinePlaybackUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -20,14 +25,24 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class RoutinePlaybackViewModel @Inject constructor(
 	private val startRoutinePlayback: StartRoutinePlaybackUseCase,
+	private val saveProgressUseCase: SaveRoutineProgressUseCase,
+	private val getProgressUseCase: GetRoutineProgressUseCase,
 	savedStateHandle: SavedStateHandle,
-	@ApplicationContext private val context: Context
+	@ApplicationContext private val context: Context,
 ) : ViewModel() {
+	
+	private var lastSavedProgress: Int? = null
+	private var lastSavedPhase: Int? = null
+	private var lastSavedRepetition: Int? = null
+	
+	private val _currentProgress = MutableStateFlow<RoutineProgress?>(null)
+	val currentProgress: StateFlow<RoutineProgress?> = _currentProgress.asStateFlow()
 	
 	private val routineId: String = savedStateHandle.get<String>("routineId")
 		?: throw IllegalArgumentException("routineId is required")
@@ -44,13 +59,40 @@ class RoutinePlaybackViewModel @Inject constructor(
 		loadRoutine()
 	}
 	
+	
 	private fun loadRoutine() {
 		viewModelScope.launch {
 			_uiState.value = PlaybackUiState.Loading
 			
 			startRoutinePlayback(routineId)
-				.onSuccess { state ->
-					// 🔹 Empieza con cuenta regresiva
+				.onSuccess { initialState ->
+					
+					val date = getCurrentDateString()
+					val savedProgress = getProgressUseCase(routineId, date)
+					
+					val shouldResume = savedProgress != null &&
+							savedProgress.progressPercentage in 1..99 &&
+							!savedProgress.isCompleted
+					
+					val state = if (shouldResume && savedProgress != null) {
+						Log.d(
+							TAG,
+							"📥 Restaurando progreso: ${savedProgress.progressPercentage}% | Fase: ${savedProgress.currentPhaseIndex} | Rep: ${savedProgress.currentRepetition}"
+						)
+						
+						val restoredPhase = initialState.phases.getOrNull(savedProgress.currentPhaseIndex)
+						initialState.copy(
+							currentPhaseIndex = savedProgress.currentPhaseIndex,
+							currentRepetition = savedProgress.currentRepetition,
+							timeRemaining = restoredPhase?.duration?.times(60) ?: 0,
+							totalElapsedTime = savedProgress.totalElapsedTime,
+							resumedFromProgress = true
+						)
+					} else {
+						Log.d(TAG, "🆕 Iniciando rutina desde el principio")
+						initialState
+					}
+					
 					val countdownState = state.copy(
 						isCountingDown = true,
 						countdown = 5,
@@ -67,17 +109,15 @@ class RoutinePlaybackViewModel @Inject constructor(
 		}
 	}
 	
-	// 🔹 Cuenta regresiva antes de iniciar (3, 2, 1)
 	private fun startCountdown() {
 		countdownJob?.cancel()
 		
-		// Inicializa la cuenta regresiva en 3
 		val initialCountdown = 4
 		(_uiState.value as? PlaybackUiState.Playing)?.state?.let { currentState ->
 			val newState = currentState.copy(
 				countdown = initialCountdown,
 				isCountingDown = true,
-				isPaused = true // pausamos la rutina mientras contamos
+				isPaused = true
 			)
 			_uiState.value = PlaybackUiState.Playing(newState)
 		}
@@ -92,22 +132,19 @@ class RoutinePlaybackViewModel @Inject constructor(
 					_uiState.value = PlaybackUiState.Playing(newState)
 					delay(1000)
 				} else {
-					// ⏰ Termina la cuenta regresiva → inicia rutina real y metrónomo
 					val newState = currentState.copy(
 						countdown = 0,
 						isCountingDown = false,
 						isPaused = false
 					)
 					_uiState.value = PlaybackUiState.Playing(newState)
-					startTimer()         // ✅ inicia el temporizador
-					startMetronome(newState) // ✅ inicia el metrónomo
+					startTimer()
+					startMetronome(newState)
 					break
 				}
 			}
 		}
 	}
-
-	
 	
 	fun onEvent(event: PlaybackEvent) {
 		val currentState = (_uiState.value as? PlaybackUiState.Playing)?.state ?: return
@@ -134,7 +171,6 @@ class RoutinePlaybackViewModel @Inject constructor(
 		}
 	}
 	
-	
 	private fun handleNextPhase(state: RoutinePlaybackState) {
 		if (!state.hasNextPhase) return
 		val nextPhaseIndex = state.currentPhaseIndex + 1
@@ -149,8 +185,9 @@ class RoutinePlaybackViewModel @Inject constructor(
 		_uiState.value = PlaybackUiState.Playing(newState)
 		
 		startTimer()
-		startMetronome(newState) // ✅ ahora respeta fases sin BPM
+		startMetronome(newState)
 	}
+	
 	
 	
 	private fun handleNextRepetition(state: RoutinePlaybackState) {
@@ -158,11 +195,14 @@ class RoutinePlaybackViewModel @Inject constructor(
 		val currentPhase = state.currentPhase ?: return
 		val nextRepetition = state.currentRepetition + 1
 		
+		// ✅ CORRECCIÓN: La lógica de canProceed debe verificar si YA alcanzamos el máximo
 		val canProceed = when (currentPhase.mode) {
 			"BY_REPS" -> nextRepetition <= currentPhase.repetitions
-			"UNTIL_BPM_MAX" -> {  // ✅ CAMBIO: "BY_BPM_MAX" → "UNTIL_BPM_MAX"
-				val nextBPM = currentPhase.calculateCurrentBPM(nextRepetition)
-				nextBPM <= currentPhase.bpmMax && currentPhase.bpmMax > 0
+			"UNTIL_BPM_MAX" -> {
+				// ✅ CAMBIO: Verificar el BPM de la repetición ACTUAL, no la siguiente
+				val currentBPM = currentPhase.calculateCurrentBPM(state.currentRepetition)
+				// Si el BPM actual ya es el máximo, NO procedemos (pasamos a siguiente fase)
+				currentBPM < currentPhase.bpmMax
 			}
 			else -> false
 		}
@@ -180,34 +220,6 @@ class RoutinePlaybackViewModel @Inject constructor(
 		startMetronome(newState)
 	}
 	
-//	private fun handleNextRepetition(state: RoutinePlaybackState) {
-//		if (!state.hasNextRepetition) return
-//		val currentPhase = state.currentPhase ?: return
-//		val nextRepetition = state.currentRepetition + 1
-//
-//		val canProceed = when (currentPhase.mode) {
-//			"BY_REPS" -> nextRepetition <= currentPhase.repetitions
-//			"BY_BPM_MAX" -> {
-//				val nextBPM = currentPhase.calculateCurrentBPM(nextRepetition)
-//				nextBPM <= currentPhase.bpmMax && currentPhase.bpmMax > 0
-//			}
-//			else -> false
-//		}
-//
-//		if (!canProceed) return
-//
-//		val newState = state.copy(
-//			currentRepetition = nextRepetition,
-//			timeRemaining = currentPhase.duration * 60
-//		)
-//
-//		_uiState.value = PlaybackUiState.Playing(newState)
-//
-//		startTimer()
-//		startMetronome(newState) // ✅ ahora respeta fases sin BPM
-//	}
-
-
 	
 	private fun handleRepeatPhase(state: RoutinePlaybackState) {
 		val currentPhase = state.currentPhase ?: return
@@ -215,10 +227,8 @@ class RoutinePlaybackViewModel @Inject constructor(
 		_uiState.value = PlaybackUiState.Playing(newState)
 		
 		startTimer()
-		startMetronome(newState) // ✅ ahora respeta fases sin BPM
+		startMetronome(newState)
 	}
-	
-
 	
 	private fun handlePhaseComplete(state: RoutinePlaybackState) {
 		if (state.hasNextRepetition) {
@@ -230,6 +240,7 @@ class RoutinePlaybackViewModel @Inject constructor(
 		}
 	}
 	
+	
 	private fun handleCompleteRoutine(state: RoutinePlaybackState) {
 		stopTimer()
 		metronome?.stop()
@@ -237,23 +248,22 @@ class RoutinePlaybackViewModel @Inject constructor(
 		val newState = state.copy(
 			isCompleted = true,
 			isPaused = true,
-			timeRemaining = 0
+			timeRemaining = 0,
+			totalElapsedTime = state.accurateTotalTime // ✅ CAMBIO CLAVE
 		)
 		_uiState.value = PlaybackUiState.Playing(newState)
+		
+		updateProgressDuringPlayback(newState)
 	}
 	
-	
-	// 🎵 Metronome controls robustos
 	private fun startMetronome(state: RoutinePlaybackState) {
 		val phase = state.currentPhase ?: return
 		
 		if (state.isPaused || phase.bpm <= 0) {
-			// 🔹 Si está pausado o fase sin BPM, detenemos el metrónomo
 			metronome?.stop()
 			return
 		}
 		
-		// 🔹 Inicia metrónomo con BPM, compás y subdivisión
 		metronome?.start(
 			bpm = state.currentBPM,
 			timeSignature = phase.timeSignature,
@@ -261,27 +271,10 @@ class RoutinePlaybackViewModel @Inject constructor(
 			coroutineScope = viewModelScope
 		)
 	}
-
 	
-	private fun updateMetronome(state: RoutinePlaybackState) {
-		val phase = state.currentPhase ?: return
-		
-		if (state.isPaused || phase.bpm <= 0) {
-			// 🔹 Detener metrónomo si no hay BPM o la rutina está pausada
-			metronome?.stop()
-			return
-		}
-		
-		// 🔹 Actualiza solo si la fase tiene BPM y no está pausada
-		metronome?.updateTempo(
-			bpm = state.currentBPM,
-			timeSignature = phase.timeSignature,
-			subdivision = phase.subdivision,
-			coroutineScope = viewModelScope
-		)
-	}
 	
-	// ⏱ Timer preciso con SystemClock
+	
+	
 	private fun startTimer() {
 		stopTimer()
 		
@@ -299,17 +292,12 @@ class RoutinePlaybackViewModel @Inject constructor(
 				
 				val currentState = (_uiState.value as? PlaybackUiState.Playing)?.state ?: continue
 				if (!currentState.isPaused) {
-					// 🔹 Calculamos minutos redondeados automáticamente
-					val roundedMinutes = if (totalElapsed % 60 >= 30) {
-						(totalElapsed / 60) + 1
-					} else {
-						totalElapsed / 60
-					}
 					val newState = currentState.copy(
 						timeRemaining = newRemaining,
-						totalElapsedTime = roundedMinutes * 60 // ⚠️ guardamos en segundos, pero UI solo muestra minutos
+						totalElapsedTime = totalElapsed
 					)
 					_uiState.value = PlaybackUiState.Playing(newState)
+					updateProgressDuringPlayback(newState)
 					
 					if (newRemaining <= 0) {
 						handlePhaseComplete(currentState)
@@ -335,4 +323,63 @@ class RoutinePlaybackViewModel @Inject constructor(
 		countdownJob?.cancel()
 		metronome?.release()
 	}
+	
+	companion object {
+		private const val TAG = "RoutinePlayback"
+	}
+	
+	
+	private fun updateProgressDuringPlayback(state: RoutinePlaybackState) {
+		viewModelScope.launch {
+			try {
+				val currentProgress = (state.progress * 100).toInt()
+				
+				val shouldSave = currentProgress != lastSavedProgress ||
+						state.currentPhaseIndex != lastSavedPhase ||
+						state.currentRepetition != lastSavedRepetition ||
+						state.isCompleted
+				
+				if (!shouldSave) return@launch
+				
+				Log.d(
+					TAG,
+					"💾 Guardando progreso: $currentProgress% | Tiempo preciso: ${state.accurateTotalTime}s | Completado: ${state.isCompleted}"
+				)
+				
+				val date = getCurrentDateString()
+				val existingProgress = getProgressUseCase(routineId, date)
+				
+				val progress = RoutineProgress(
+					id = existingProgress?.id ?: UUID.randomUUID().toString(),
+					routineId = routineId,
+					routineName = state.routine.name,
+					date = date,
+					progressPercentage = currentProgress.coerceIn(0, 100),
+					currentPhaseIndex = state.currentPhaseIndex,
+					currentRepetition = state.currentRepetition,
+					totalElapsedTime = state.accurateTotalTime, // ✅ USAR TIEMPO PRECISO
+					isCompleted = state.isCompleted,
+					lastUpdated = System.currentTimeMillis(),
+					createdAt = existingProgress?.createdAt ?: System.currentTimeMillis()
+				)
+				
+				saveProgressUseCase(progress)
+				
+				lastSavedProgress = currentProgress
+				lastSavedPhase = state.currentPhaseIndex
+				lastSavedRepetition = state.currentRepetition
+				
+				Log.d(TAG, "✅ Progreso guardado: ${state.formattedTotalTime}")
+				
+			} catch (e: Exception) {
+				Log.e(TAG, "❌ Error actualizando progreso: ${e.message}", e)
+			}
+		}
+	}
+	
+	private fun getCurrentDateString(): String {
+		val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+		return sdf.format(java.util.Date())
+	}
 }
+

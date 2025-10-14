@@ -2,9 +2,8 @@ plugins {
 	alias(libs.plugins.android.application)
 	alias(libs.plugins.kotlin.android)
 	alias(libs.plugins.kotlin.compose)
-	id("com.google.dagger.hilt.android")   // ✅ plugin de Hilt directo
+	id("com.google.dagger.hilt.android")
 	id("kotlin-kapt")
-//	id("com.google.gms.google-services")
 	alias(libs.plugins.jetbrainsKotlinSerialization)
 }
 
@@ -47,6 +46,18 @@ android {
 
 dependencies {
 	
+	
+	// --- Cardview ---
+	implementation (libs.androidx.cardview)
+	
+	// --- QR Code generation ---
+	implementation (libs.google.core)
+	
+	// --- QR Code scanning ---
+	implementation (libs.zxing.android.embedded)
+	
+	// --- Gson para serialización ---
+	implementation (libs.gson)
 	
 	// --- Coil (Carga de imagenes, gifs, etc) ---
 	implementation(libs.coil.compose)

@@ -1,7 +1,6 @@
 package com.example.studivo.domain.model
 
 import com.example.studivo.domain.model.entity.PhaseEntity
-import com.example.studivo.presentation.ui.routine.PhaseIcon
 import java.util.UUID
 
 data class TempPhaseItem(
@@ -10,7 +9,7 @@ data class TempPhaseItem(
 	val duration: Int,
 	val bpmInitial: Int,
 	val timeSignature: String,
-	val subdivision: String = "QUARTER", // ✨ NUEVO
+	val subdivision: String = "QUARTER",
 	val color: String,
 	val mode: String,
 	val repetitions: Int,

@@ -90,22 +90,20 @@ private val LightColorScheme = lightColorScheme(
 	outlineVariant = Color(0xFFD1D5DB)
 )
 
-
 @Composable
 fun StudivoTheme(
-	// Se actualiza automáticamente al cambiar el modo del sistema
-	dynamicColor: Boolean = true,
+	isDarkTheme: Boolean,
+	dynamicColor: Boolean = false,
 	content: @Composable () -> Unit
 ) {
-	val darkTheme = isSystemInDarkTheme() // 🔥 Se sincroniza con el sistema
 	val context = LocalContext.current
 	
 	val colorScheme = when {
 		dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-			if (darkTheme) dynamicDarkColorScheme(context)
+			if (isDarkTheme) dynamicDarkColorScheme(context)
 			else dynamicLightColorScheme(context)
 		}
-		darkTheme -> DarkColorScheme
+		isDarkTheme -> DarkColorScheme
 		else -> LightColorScheme
 	}
 	
@@ -115,6 +113,7 @@ fun StudivoTheme(
 		content = content
 	)
 }
+
 
 // 🎵 Tipografía expresiva
 private val MusicTypography = Typography(

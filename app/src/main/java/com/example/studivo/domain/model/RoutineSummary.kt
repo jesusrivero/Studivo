@@ -5,7 +5,7 @@ data class RoutineSummary(
 	val name: String,
 	val description: String,
 	val totalPhases: Int,
-	val totalDuration: Int, // en minutos
+	val totalDuration: Int,
 	val createdAt: Long
 ) {
 	fun getFormattedDuration(): String {

@@ -18,8 +18,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -38,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -59,24 +58,21 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.glance.appwidget.Switch
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.studivo.domain.model.NoteSubdivision
 import com.example.studivo.domain.model.TempPhaseItem
+import com.example.studivo.domain.model.availableColors
 import com.example.studivo.domain.viewmodels.RoutineViewModel
-import com.example.studivo.presentation.navegacion.AppRoutes
 import java.util.UUID
-import kotlin.collections.isNotEmpty
 import kotlin.math.ceil
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditedRoutineScreen(
 	navController: NavController,
-	routineId: String
+	routineId: String,
 ) {
 	EditedRoutineScreenContent(
 		navController = navController,
@@ -88,58 +84,24 @@ fun EditedRoutineScreen(
 @Composable
 fun EditedRoutineScreenContent(
 	navController: NavController,
-	routineId: String
+	routineId: String,
+	viewModel: RoutineViewModel = hiltViewModel(),
 ) {
-	val viewModel: RoutineViewModel = hiltViewModel()
 	
-	// Nombre de la rutina
 	var routineName by remember { mutableStateOf("") }
-	
-	// Lista de fases temporal editable
 	val phases by remember { derivedStateOf { viewModel.tempPhases } }
-	
-	// Validaciones
 	var showNameError by remember { mutableStateOf(false) }
 	var showPhasesError by remember { mutableStateOf(false) }
-	
-	// Estado para el diálogo de fase
 	var showPhaseDialog by remember { mutableStateOf(false) }
 	var editingPhaseId by remember { mutableStateOf<String?>(null) }
 	
-	// Cargar rutina al iniciar la pantalla
+	
 	LaunchedEffect(routineId) {
-		Log.d("EditRoutineUnified", "Cargando rutina con ID: $routineId")
 		viewModel.loadRoutineForEditing(routineId)
 	}
 	
-	// Sincronizar el nombre cargado desde ViewModel
 	LaunchedEffect(viewModel.routineName) {
 		routineName = viewModel.routineName
-		Log.d("EditRoutineUnified", "Nombre de rutina cargado: $routineName" )
-	}
-	
-	LaunchedEffect(phases) {
-		phases.forEach { phase ->
-			Log.d(
-				"EditRoutineUnified",
-				"""
-            ---- Fase ----
-            id: ${phase.tempId}
-            nombre: ${phase.name}
-            duración: ${phase.duration}
-            bpmInitial: ${phase.bpmInitial}
-            timeSignature: ${phase.timeSignature}
-            color (Int): ${phase.color}
-           color (string): ${phase.color}
-            modo: ${phase.mode}
-            repeticiones: ${phase.repetitions}
-            bpmIncrement: ${phase.bpmIncrement}
-            bpmMax: ${phase.bpmMax}
-            routineId: ${phase.routineId}
-            ----------------
-            """.trimIndent()
-			)
-		}
 	}
 	
 	Scaffold(
@@ -194,7 +156,6 @@ fun EditedRoutineScreenContent(
 		) {
 			Spacer(modifier = Modifier.height(16.dp))
 			
-			// Campo nombre rutina
 			RoutineNameField(
 				value = routineName,
 				onValueChange = {
@@ -207,7 +168,6 @@ fun EditedRoutineScreenContent(
 			
 			Spacer(modifier = Modifier.height(24.dp))
 			
-			// Header fases
 			PhasesHeader(
 				onClick = {
 					editingPhaseId = null
@@ -226,7 +186,7 @@ fun EditedRoutineScreenContent(
 			
 			Spacer(modifier = Modifier.height(16.dp))
 			
-			// Lista fases
+			
 			if (phases.isNotEmpty()) {
 				EnhancedPhasesReorderableList(
 					phases = phases,
@@ -249,7 +209,7 @@ fun EditedRoutineScreenContent(
 		}
 	}
 	
-	// Diálogo de fase (bottom sheet)
+	
 	if (showPhaseDialog) {
 		EditPhaseBottomSheet(
 			viewModel = viewModel,
@@ -271,9 +231,6 @@ fun EditedRoutineScreenContent(
 	}
 }
 
-// =====================================
-// CAMBIOS EN EditPhaseBottomSheet
-// =====================================
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -281,12 +238,12 @@ fun EditPhaseBottomSheet(
 	viewModel: RoutineViewModel,
 	editingPhaseId: String?,
 	onDismiss: () -> Unit,
-	onSave: (TempPhaseItem) -> Unit
+	onSave: (TempPhaseItem) -> Unit,
 ) {
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	val scope = rememberCoroutineScope()
 	
-	// Fase reactiva desde tempPhases
+	
 	val currentPhase = remember(viewModel.tempPhases, editingPhaseId) {
 		derivedStateOf {
 			editingPhaseId?.let { id ->
@@ -295,23 +252,23 @@ fun EditPhaseBottomSheet(
 		}
 	}.value
 	
-	// Estados del formulario
+	
 	var phaseName by remember { mutableStateOf("") }
 	var duration by remember { mutableStateOf("") }
 	var bpm by remember { mutableStateOf("") }
 	var selectedTimeSignature by remember { mutableStateOf("4/4") }
-	
-	// ✨ NUEVO: Estado para subdivisión
 	var selectedSubdivision by remember { mutableStateOf(NoteSubdivision.QUARTER) }
-	
 	var showAdvancedOptions by remember { mutableStateOf(false) }
 	var repetitions by remember { mutableStateOf("") }
 	var bpmIncrement by remember { mutableStateOf("") }
 	var bpmMax by remember { mutableStateOf("") }
 	var selectedColor by remember { mutableStateOf(Color(0xFF2196F3)) }
 	var selectedMode by remember { mutableStateOf("BY_REPS") }
+	val timeSignatures = listOf("4/4", "3/4", "2/4", "7/8", "6/8", "3/2")
+	val availableColors = availableColors
+	val isFormValid = phaseName.isNotBlank() && duration.isNotBlank()
 	
-	// Cargar campos locales cuando la fase cambie
+	
 	LaunchedEffect(currentPhase) {
 		currentPhase?.let {
 			phaseName = it.name
@@ -326,7 +283,7 @@ fun EditPhaseBottomSheet(
 			selectedMode = it.mode
 			showAdvancedOptions = it.repetitions > 0 || it.bpmMax > it.bpmInitial
 		} ?: run {
-			// Si no existe en tempPhases, cargar desde Room
+			
 			editingPhaseId?.let { id ->
 				viewModel.getPhaseById(id) { dbPhase ->
 					dbPhase?.let {
@@ -351,19 +308,6 @@ fun EditPhaseBottomSheet(
 		}
 	}
 	
-	val timeSignatures = listOf("4/4", "3/4", "2/4", "7/8", "6/8", "3/2")
-	val availableColors = listOf(
-		Color(0xFF2196F3),
-		Color(0xFF4CAF50),
-		Color(0xFFFFC107),
-		Color(0xFFF44336),
-		Color(0xFF9C27B0),
-		Color(0xFFE91E63),
-		Color(0xFF3F51B5)
-	)
-	
-	val isFormValid = phaseName.isNotBlank() && duration.isNotBlank()
-	
 	ModalBottomSheet(
 		onDismissRequest = onDismiss,
 		sheetState = sheetState,
@@ -376,7 +320,6 @@ fun EditPhaseBottomSheet(
 				.fillMaxSize()
 				.padding(horizontal = 16.dp)
 		) {
-			// Header
 			Row(
 				modifier = Modifier
 					.fillMaxWidth()
@@ -423,12 +366,12 @@ fun EditPhaseBottomSheet(
 				}
 			}
 			
-			// Contenido scrolleable
+			
 			LazyColumn(
 				verticalArrangement = Arrangement.spacedBy(24.dp),
 				contentPadding = PaddingValues(bottom = 32.dp)
 			) {
-				// Datos básicos
+				
 				item {
 					BasicDataSection(
 						phaseName = phaseName,
@@ -440,15 +383,14 @@ fun EditPhaseBottomSheet(
 						selectedTimeSignature = selectedTimeSignature,
 						onTimeSignatureChange = { selectedTimeSignature = it },
 						timeSignatures = timeSignatures,
-						selectedSubdivision = selectedSubdivision, // ✨ NUEVO
-						onSubdivisionChange = { selectedSubdivision = it }, // ✨ NUEVO
+						selectedSubdivision = selectedSubdivision,
+						onSubdivisionChange = { selectedSubdivision = it },
 						selectedColor = selectedColor,
 						onColorChange = { selectedColor = it },
 						availableColors = availableColors
 					)
 				}
 				
-				// Switch Opciones avanzadas
 				item {
 					AdvancedOptionsSwitch(
 						isEnabled = showAdvancedOptions,
@@ -457,7 +399,6 @@ fun EditPhaseBottomSheet(
 					)
 				}
 				
-				// Opciones avanzadas
 				if (showAdvancedOptions) {
 					item {
 						AdvancedOptionsSection(
@@ -478,94 +419,7 @@ fun EditPhaseBottomSheet(
 		}
 	}
 }
-//@Composable
-//private fun BasicDataSection(
-//	phaseName: String,
-//	onPhaseNameChange: (String) -> Unit,
-//	duration: String,
-//	onDurationChange: (String) -> Unit,
-//	bpm: String,
-//	onBpmChange: (String) -> Unit,
-//	selectedTimeSignature: String,
-//	onTimeSignatureChange: (String) -> Unit,
-//	timeSignatures: List<String>,
-//	selectedColor: Color,
-//	onColorChange: (Color) -> Unit,
-//	availableColors: List<Color>,
-//) {
-//	Card(
-//		modifier = Modifier.fillMaxWidth(),
-//		shape = RoundedCornerShape(16.dp),
-//		colors = CardDefaults.cardColors(
-//			containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-//		)
-//	) {
-//		Column(
-//			modifier = Modifier.padding(20.dp),
-//			verticalArrangement = Arrangement.spacedBy(16.dp)
-//		) {
-//			Text(
-//				text = "Datos básicos",
-//				style = MaterialTheme.typography.titleMedium,
-//				fontWeight = FontWeight.SemiBold,
-//				color = MaterialTheme.colorScheme.onSurface
-//			)
-//
-//			OutlinedTextField(
-//				value = phaseName,
-//				onValueChange = onPhaseNameChange,
-//				modifier = Modifier.fillMaxWidth(),
-//				label = { Text("Nombre de la fase") },
-//				placeholder = { Text("Ej: Calentamiento") },
-//				shape = RoundedCornerShape(12.dp)
-//			)
-//
-//			Row(
-//				modifier = Modifier.fillMaxWidth(),
-//				horizontalArrangement = Arrangement.spacedBy(16.dp)
-//			) {
-//				OutlinedTextField(
-//					value = duration,
-//					onValueChange = onDurationChange,
-//					modifier = Modifier.weight(1f),
-//					label = { Text("Duración (min)") },
-//					placeholder = { Text("Ej: 10") },
-//					keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-//					shape = RoundedCornerShape(12.dp)
-//				)
-//				OutlinedTextField(
-//					value = bpm,
-//					onValueChange = onBpmChange,
-//					modifier = Modifier.weight(1f),
-//					label = { Text("BPM inicial") },
-//					placeholder = { Text("Ej: 60") },
-//					keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-//					shape = RoundedCornerShape(12.dp)
-//				)
-//			}
-//
-//			LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-//				items(timeSignatures) { timeSignature ->
-//					TimeSignatureChip(
-//						timeSignature = timeSignature,
-//						isSelected = selectedTimeSignature == timeSignature,
-//						onSelect = { onTimeSignatureChange(timeSignature) }
-//					)
-//				}
-//			}
-//
-//			LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-//				items(availableColors) { color ->
-//					ColorOption(
-//						color = color,
-//						isSelected = selectedColor == color,
-//						onSelect = { onColorChange(color) }
-//					)
-//				}
-//			}
-//		}
-//	}
-//}
+
 
 @Composable
 private fun AdvancedOptionsSwitch(
@@ -583,13 +437,15 @@ private fun AdvancedOptionsSwitch(
 			style = MaterialTheme.typography.bodyLarge,
 			color = MaterialTheme.colorScheme.onSurface
 		)
-		androidx.compose.material3.Switch(
+		Switch(
 			checked = isEnabled,
 			onCheckedChange = { if (switchEnabled) onToggle(it) },
 			enabled = switchEnabled,
 			colors = SwitchDefaults.colors(
 				checkedThumbColor = MaterialTheme.colorScheme.primary,
-				checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+				checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+				uncheckedTrackColor = Color(0xFFE0E0E0),
+				uncheckedThumbColor = Color.White
 			)
 		)
 	}
@@ -606,7 +462,7 @@ private fun AdvancedOptionsSection(
 	bpmIncrement: String,
 	onBpmIncrementChange: (String) -> Unit,
 	bpmMax: String,
-	onBpmMaxChange: (String) -> Unit
+	onBpmMaxChange: (String) -> Unit,
 ) {
 	Card(
 		modifier = Modifier.fillMaxWidth(),
@@ -681,13 +537,14 @@ private fun AdvancedOptionsByReps(
 	repetitions: String,
 	onRepetitionsChange: (String) -> Unit,
 	bpmIncrement: String,
-	onBpmIncrementChange: (String) -> Unit
+	onBpmIncrementChange: (String) -> Unit,
 ) {
 	val bpmInt = bpmInitial.toIntOrNull() ?: 0
 	val incrementInt = bpmIncrement.toIntOrNull() ?: 0
 	val repsInt = repetitions.toIntOrNull() ?: 0
 	val durationInt = duration.toIntOrNull() ?: 0
-	val calculatedBpmMax = if (bpmInt > 0 && repsInt > 0) bpmInt + (repsInt - 1) * incrementInt else bpmInt
+	val calculatedBpmMax =
+		if (bpmInt > 0 && repsInt > 0) bpmInt + (repsInt - 1) * incrementInt else bpmInt
 	val totalDuration = durationInt * repsInt
 	
 	Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -736,7 +593,7 @@ private fun AdvancedOptionsUntilBpmMax(
 	bpmIncrement: String,
 	onBpmIncrementChange: (String) -> Unit,
 	bpmMax: String,
-	onBpmMaxChange: (String) -> Unit
+	onBpmMaxChange: (String) -> Unit,
 ) {
 	val bpmInt = bpmInitial.toIntOrNull() ?: 0
 	val incrementInt = bpmIncrement.toIntOrNull() ?: 0

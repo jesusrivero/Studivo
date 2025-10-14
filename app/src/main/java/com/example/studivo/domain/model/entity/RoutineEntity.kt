@@ -14,7 +14,7 @@ data class RoutineEntity(
 	@PrimaryKey val id: String = UUID.randomUUID().toString(),
 	val name: String,
 	val description: String = "",
-	val color: String = "#FF2196F3", // ✅ color como string hex
+	val color: String = "#FF2196F3",
 	val createdAt: Long = System.currentTimeMillis()
 )
 @Entity(
@@ -34,7 +34,7 @@ data class PhaseEntity(
 	val duration: Int,
 	val bpm: Int = 0,
 	val timeSignature: String = "4/4",
-	val subdivision: String = "QUARTER", // ✨ NUEVO
+	val subdivision: String = "QUARTER",
 	val color: String = "#FF2196F3",
 	val mode: String = "BY_REPS",
 	val repetitions: Int = 1,

@@ -9,7 +9,7 @@ data class Phase(
 	val duration: Int,
 	val bpm: Int = 0,
 	val timeSignature: String = "4/4",
-	val subdivision: NoteSubdivision = NoteSubdivision.QUARTER, // ✨ NUEVO
+	val subdivision: NoteSubdivision = NoteSubdivision.QUARTER,
 	val color: Color = Color(0xFF2196F3),
 	val repetitions: Int = 1,
 	val bpmIncrement: Int = 0,

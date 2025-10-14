@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
-import kotlin.math.ceil
 
 @HiltViewModel
 class RoutineViewModel @Inject constructor(
@@ -46,24 +45,23 @@ class RoutineViewModel @Inject constructor(
 		private set
 	
 	
-
 	var tempPhases by mutableStateOf<List<TempPhaseItem>>(emptyList())
 		private set
 	
 	var routineName by mutableStateOf("")
 		private set
 	
-	// Añadir fase temporal
+	
 	fun addTempPhase(phase: TempPhaseItem) {
 		tempPhases = tempPhases + phase
 	}
 	
-	// Eliminar fase temporal
+	
 	fun removeTempPhase(phaseId: String) {
 		tempPhases = tempPhases.filterNot { it.tempId == phaseId }
 	}
 	
-	// ✅ NUEVO: Actualizar fase temporal existente
+	
 	fun updateTempPhase(phase: TempPhaseItem) {
 		val currentList = tempPhases.toMutableList()
 		val index = currentList.indexOfFirst { it.tempId == phase.tempId }
@@ -88,7 +86,7 @@ class RoutineViewModel @Inject constructor(
 	
 	fun createRoutineWithTempPhases(
 		name: String,
-		onSuccess: () -> Unit
+		onSuccess: () -> Unit,
 	) {
 		viewModelScope.launch {
 			val routineId = UUID.randomUUID().toString()
@@ -108,8 +106,8 @@ class RoutineViewModel @Inject constructor(
 					duration = temp.duration,
 					bpm = temp.bpmInitial,
 					timeSignature = temp.timeSignature,
-					subdivision = temp.getSubdivisionEnum(), // ✨ NUEVO
-					color = temp.color.fromHex(), // ✅ String -> Color
+					subdivision = temp.getSubdivisionEnum(),
+					color = temp.color.fromHex(),
 					mode = temp.mode,
 					repetitions = temp.repetitions,
 					bpmIncrement = temp.bpmIncrement,
@@ -126,9 +124,6 @@ class RoutineViewModel @Inject constructor(
 	}
 	
 	
-	
-	
-	
 	fun updateRoutineWithTempPhases(
 		routineId: String,
 		name: String,
@@ -139,7 +134,7 @@ class RoutineViewModel @Inject constructor(
 			try {
 				_isLoading.value = true
 				
-				// 1️⃣ Actualizar nombre de la rutina
+				
 				val existingRoutine = useCases.getRoutineById(routineId)
 				if (existingRoutine == null) {
 					onError("Rutina no encontrada")
@@ -148,11 +143,11 @@ class RoutineViewModel @Inject constructor(
 				val updatedRoutine = existingRoutine.copy(name = name)
 				useCases.updateRoutine(updatedRoutine)
 				
-				// 2️⃣ Eliminar fases antiguas
+				
 				val oldPhases = useCases.getPhasesByRoutine(routineId)
 				oldPhases.forEach { useCases.deletePhase(it.id) }
 				
-				// 3️⃣ Guardar nuevas fases desde tempPhases
+				
 				tempPhases.forEachIndexed { index, temp ->
 					val newPhase = Phase(
 						id = UUID.randomUUID().toString(),
@@ -161,8 +156,8 @@ class RoutineViewModel @Inject constructor(
 						duration = temp.duration,
 						bpm = temp.bpmInitial,
 						timeSignature = temp.timeSignature,
-						subdivision = temp.getSubdivisionEnum(), // ✨ NUEVO
-						color = temp.color.fromHex(), // ✅ String -> Color
+						subdivision = temp.getSubdivisionEnum(),
+						color = temp.color.fromHex(),
 						mode = temp.mode,
 						repetitions = temp.repetitions,
 						bpmIncrement = temp.bpmIncrement,
@@ -172,7 +167,6 @@ class RoutineViewModel @Inject constructor(
 					useCases.insertPhase(newPhase)
 				}
 				
-				// 4️⃣ Limpiar fases temporales y refrescar rutinas
 				tempPhases = emptyList()
 				loadRoutines()
 				onSuccess()
@@ -184,23 +178,21 @@ class RoutineViewModel @Inject constructor(
 			}
 		}
 	}
-
+	
 	fun reorderTempPhases(newOrder: List<TempPhaseItem>) {
 		tempPhases = newOrder.mapIndexed { index, item ->
-			item.copy(tempId = item.tempId) // conservas el ID
+			item.copy(tempId = item.tempId)
 		}
 	}
-	
 	
 	
 	fun loadRoutines() {
 		viewModelScope.launch {
 			_isLoading.value = true
 			try {
-				// 1️⃣ Trae todas las rutinas (sin fases)
-				val routinesFromDb = useCases.getAllRoutines() // List<Routine>
 				
-				// 2️⃣ Para cada rutina trae sus fases en paralelo
+				val routinesFromDb = useCases.getAllRoutines()
+				
 				val pairs: List<Pair<Routine, List<Phase>>> = coroutineScope {
 					routinesFromDb.map { routine ->
 						async {
@@ -210,7 +202,6 @@ class RoutineViewModel @Inject constructor(
 					}.awaitAll()
 				}
 				
-				// Actualiza esta sección en tu función loadRoutines()
 				val summaries = pairs.map { (routine, phases) ->
 					val totalPhases = phases.size
 					val totalDuration = phases.sumOf { phase ->
@@ -229,7 +220,6 @@ class RoutineViewModel @Inject constructor(
 				
 				routineSummaries = summaries
 				
-				// 4️⃣ Opcional: almacenar rutinas completas con sus fases
 				routines = pairs.map { (routine, phases) ->
 					routine.copy(phases = phases)
 				}
@@ -241,25 +231,22 @@ class RoutineViewModel @Inject constructor(
 			}
 		}
 	}
-
-
 	
 	
 	fun Phase.toTempPhaseItem(): TempPhaseItem {
 		return TempPhaseItem(
-			tempId = id, // usamos el mismo id temporalmente
+			tempId = id,
 			name = name,
 			duration = duration,
 			bpmInitial = bpm,
 			timeSignature = timeSignature,
-			subdivision = subdivision.name, // ✨ NUEVO
+			subdivision = subdivision.name,
 			color = color.toHexString(),
 			mode = mode,
 			repetitions = repetitions,
 			bpmIncrement = bpmIncrement,
 			bpmMax = bpmMax,
-			
-			routineId = routineId, // 👈 muy importante
+			routineId = routineId,
 		)
 	}
 	
@@ -275,7 +262,7 @@ class RoutineViewModel @Inject constructor(
 			try {
 				_isLoading.value = true
 				useCases.deleteRoutineWithPhases(routineId)
-				loadRoutines() // refrescamos lista
+				loadRoutines()
 				onSuccess()
 			} catch (e: Exception) {
 				onError(e.localizedMessage ?: "Error eliminando rutina")
@@ -286,20 +273,15 @@ class RoutineViewModel @Inject constructor(
 	}
 }
 
-// Agregá esta función helper en tu RoutineViewModel
+
 private fun Phase.calculateRepetitions(): Int {
 	return when {
-		// Modo BY_REPS: usar las repeticiones definidas
-		mode == "BY_REPS" && repetitions > 0 -> repetitions
-		
-		// Modo UNTIL_BPM_MAX: calcular repeticiones necesarias
+		mode == "BY_REPS" && repetitions > 0 -> repetitions.coerceAtLeast(1)
 		mode == "UNTIL_BPM_MAX" && bpmIncrement > 0 && bpmMax > bpm -> {
-			// Fórmula: (bpmMax - bpmInicial) / incremento + 1
 			val neededRepetitions = ((bpmMax - bpm) / bpmIncrement) + 1
 			neededRepetitions.coerceAtLeast(1)
 		}
 		
-		// Caso por defecto: 1 repetición
 		else -> 1
 	}
 }

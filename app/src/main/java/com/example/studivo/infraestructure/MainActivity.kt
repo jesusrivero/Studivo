@@ -13,8 +13,6 @@ import com.example.studivo.presentation.navegacion.NavigationHost
 import com.example.studivo.presentation.theme.StudivoTheme
 
 import dagger.hilt.android.AndroidEntryPoint
-
-
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,7 +22,7 @@ class MainActivity : ComponentActivity() {
 			val themeViewModel: ThemeViewModel = hiltViewModel()
 			val isDarkMode by themeViewModel.isDarkMode.collectAsState()
 			
-			StudivoTheme() {
+			StudivoTheme(isDarkTheme = isDarkMode) {
 				val navController = rememberNavController()
 				NavigationHost(navController = navController)
 			}

@@ -3,6 +3,7 @@ activityComposeVersion = "1.9.1"
 agp = "8.10.1"
 androidxCoreKtx = "1.17.0"
 androidxWorkRuntimeKtx = "2.9.0"
+cardview = "1.0.0"
 charty = "1.0.0"
 
 coilCompose = "2.6.0"
@@ -10,8 +11,11 @@ converterMoshi = "2.9.0"
 coreKtxVersion = "1.13.1"
 coreSplashscreen = "1.0.1"
 datastorePreferences = "1.1.7"
+datastorePreferencesVersion = "1.0.0"
 firebaseBom = "34.2.0"
 glanceAppwidget = "1.1.1"
+googleCore = "3.5.2"
+gson = "2.11.0"
 hiltAndroid = "2.52"
 hiltCompiler = "2.52"
 hiltNavigationCompose = "1.2.0"
@@ -46,11 +50,16 @@ workRuntimeKtx = "2.10.1"
 workRuntimeKtxVersion = "2.9.0"
 navigationComposeAndroid = "2.9.3"
 reorderable = "3.0.0"
+zxingAndroidEmbedded = "4.3.0"
 
 
 [libraries]
+androidx-cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
+androidx-datastore-preferences-v100 = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferencesVersion" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 coil-gif = { module = "io.coil-kt:coil-gif", version.ref = "coilCompose" }
+google-core = { module = "com.google.zxing:core", version.ref = "googleCore" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 androidx-core-ktx-v1170 = { module = "androidx.core:core-ktx", version.ref = "androidxCoreKtx" }
 androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltWork" }
@@ -106,6 +115,7 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit
 squareup-moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshiVersion" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationComposeAndroid" }
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntimeKtx" }
+zxing-android-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxingAndroidEmbedded" }
 
 [plugins]
 jetbrainsKotlinSerialization = {id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

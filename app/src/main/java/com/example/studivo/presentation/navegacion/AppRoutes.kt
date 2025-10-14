@@ -16,25 +16,18 @@ object AppRoutes {
 	@Serializable
 	data object SettingsScreen
 	
-//	@Serializable
-//	data object StatisticsScreen
-	
-	// 👇 pantalla única para crear/editar rutina
 	@Serializable
 	data object CreateRoutineScreen
-	
 	
 	@Serializable
 	data class EditedRoutineScreen(val routineId: String)
 	
 	@Serializable
-	data object CreateFaseScreen
-	
-	@Serializable
-	data class EditedFaseScreen(val faseId: String)
-	
-	@Serializable
 	data class RoutinePlaybackScreen(val routineId: String)
 	
-
+	@Serializable
+	data object QRScannerScreen
+	
+	@Serializable
+	data object HistoryScreen
 }

@@ -8,12 +8,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.studivo.presentation.navegacion.AppRoutes.RoutinePlaybackScreen
 import com.example.studivo.presentation.splash.SplashScreen
+import com.example.studivo.presentation.ui.HistoryScreen
 import com.example.studivo.presentation.ui.MetronomeScreen
 import com.example.studivo.presentation.ui.SettingsScreen
-import com.example.studivo.presentation.ui.StatisticsScreen
 import com.example.studivo.presentation.ui.home.MainScreen
+import com.example.studivo.presentation.ui.home.QRScannerScreen
 import com.example.studivo.presentation.ui.routine.CreateRoutineScreen
 import com.example.studivo.presentation.ui.routine.EditedRoutineScreen
 import com.example.studivo.presentation.ui.routine.RoutinePlaybackScreen
@@ -64,5 +64,18 @@ fun NavigationHost(
 			val routineId = backStackEntry.arguments?.getString("routineId") ?: ""
 			RoutinePlaybackScreen(navController = navController, routineId = routineId)
 		}
+		
+		composable<AppRoutes.QRScannerScreen> {
+			QRScannerScreen(
+				navController = navController
+			)
+		}
+		composable<AppRoutes.HistoryScreen> {
+			HistoryScreen(
+				navController = navController
+			)
+		}
+		
 	}
+	
 }

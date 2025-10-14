@@ -1,6 +1,5 @@
 package com.example.studivo.presentation.ui.routine
 
-import android.widget.Switch
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.animation.core.animateDpAsState
@@ -10,6 +9,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
+import androidx.compose.material3.Switch
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
@@ -98,6 +98,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.studivo.domain.model.NoteSubdivision
 import com.example.studivo.domain.model.TempPhaseItem
+import com.example.studivo.domain.model.availableColors
 import com.example.studivo.domain.viewmodels.RoutineViewModel
 import com.example.studivo.presentation.utils.fromHex
 import kotlinx.coroutines.delay
@@ -124,19 +125,12 @@ fun CreateRoutineScreen(
 @Composable
 fun CreateRoutineScreenContent(
 	navController: NavController,
+	viewModel: RoutineViewModel = hiltViewModel(),
 ) {
-	val viewModel: RoutineViewModel = hiltViewModel()
-	
-	// Estado de nombre de rutina
 	var routineName by remember { mutableStateOf("") }
-	
 	val phases by remember { derivedStateOf { viewModel.tempPhases } }
-	
-	// Validaciones
 	var showNameError by remember { mutableStateOf(false) }
 	var showPhasesError by remember { mutableStateOf(false) }
-	
-	// Estado para el diálogo de fase
 	var showPhaseDialog by remember { mutableStateOf(false) }
 	var editingPhaseId by remember { mutableStateOf<String?>(null) }
 	
@@ -188,7 +182,6 @@ fun CreateRoutineScreenContent(
 		) {
 			Spacer(modifier = Modifier.height(16.dp))
 			
-			// Campo nombre rutina
 			RoutineNameField(
 				value = routineName,
 				onValueChange = {
@@ -201,7 +194,7 @@ fun CreateRoutineScreenContent(
 			
 			Spacer(modifier = Modifier.height(24.dp))
 			
-			// Header fases
+		
 			PhasesHeader(
 				onClick = {
 					editingPhaseId = null
@@ -220,7 +213,7 @@ fun CreateRoutineScreenContent(
 			
 			Spacer(modifier = Modifier.height(16.dp))
 			
-			// Lista fases
+		
 			if (phases.isNotEmpty()) {
 				EnhancedPhasesReorderableList(
 					phases = phases,
@@ -242,7 +235,7 @@ fun CreateRoutineScreenContent(
 		}
 	}
 	
-	// Diálogo de fase (bottom sheet)
+
 	if (showPhaseDialog) {
 		PhaseBottomSheet(
 			viewModel = viewModel,
@@ -264,9 +257,7 @@ fun CreateRoutineScreenContent(
 	}
 }
 
-// =====================================
-// CAMBIOS EN PhaseBottomSheet
-// =====================================
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -278,23 +269,14 @@ fun PhaseBottomSheet(
 ) {
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	val scope = rememberCoroutineScope()
-	
 	val existingPhase = editingPhaseId?.let { id ->
-		viewModel.tempPhases.find { it.tempId == id }
-	}
-	
-	// Estados del formulario
+		viewModel.tempPhases.find { it.tempId == id }}
 	var phaseName by remember { mutableStateOf(existingPhase?.name ?: "") }
 	var duration by remember { mutableStateOf(existingPhase?.duration?.toString() ?: "") }
 	var bpm by remember { mutableStateOf(existingPhase?.bpmInitial?.toString() ?: "") }
 	var selectedTimeSignature by remember { mutableStateOf(existingPhase?.timeSignature ?: "4/4") }
-	
-	// ✨ NUEVO: Estado para subdivisión
 	var selectedSubdivision by remember {
-		mutableStateOf(
-			existingPhase?.getSubdivisionEnum() ?: NoteSubdivision.QUARTER
-		)
-	}
+		mutableStateOf(existingPhase?.getSubdivisionEnum() ?: NoteSubdivision.QUARTER) }
 	
 	var showAdvancedOptions by remember {
 		mutableStateOf(existingPhase?.let { it.repetitions > 0 || it.bpmMax > it.bpmInitial } ?: false)
@@ -303,21 +285,13 @@ fun PhaseBottomSheet(
 	var bpmIncrement by remember { mutableStateOf(existingPhase?.bpmIncrement?.toString() ?: "") }
 	var bpmMax by remember { mutableStateOf(existingPhase?.bpmMax?.toString() ?: "") }
 	var selectedColor by remember {
-		mutableStateOf(existingPhase?.let { it.color.fromHex() } ?: Color(0xFF2196F3))
-	}
+		mutableStateOf(existingPhase?.let { it.color.fromHex() } ?: Color(0xFF2196F3))}
 	var selectedMode by remember { mutableStateOf(existingPhase?.mode ?: "BY_REPS") }
 	
 	val isFormValid = phaseName.isNotBlank() && duration.isNotBlank()
 	val timeSignatures = listOf("4/4", "3/4", "2/4", "7/8", "6/8", "3/2")
-	val availableColors = listOf(
-		Color(0xFF2196F3),
-		Color(0xFF4CAF50),
-		Color(0xFFFFC107),
-		Color(0xFFF44336),
-		Color(0xFF9C27B0),
-		Color(0xFFE91E63),
-		Color(0xFF3F51B5)
-	)
+	val availableColors = availableColors
+
 	
 	ModalBottomSheet(
 		onDismissRequest = onDismiss,
@@ -331,7 +305,7 @@ fun PhaseBottomSheet(
 				.fillMaxSize()
 				.padding(horizontal = 16.dp)
 		) {
-			// Header con botón guardar
+		
 			Row(
 				modifier = Modifier
 					.fillMaxWidth()
@@ -360,10 +334,10 @@ fun PhaseBottomSheet(
 								repetitions.toIntOrNull() ?: 0 else 0,
 							bpmIncrement = if (showAdvancedOptions)
 								bpmIncrement.toIntOrNull() ?: 0 else 0,
-							bpmMax = if (showAdvancedOptions && selectedMode == "UNTIL_BPM_MAX")  // ✅ Verifica que sea UNTIL_BPM_MAX
+							bpmMax = if (showAdvancedOptions && selectedMode == "UNTIL_BPM_MAX")
 								bpmMax.toIntOrNull() ?: 0 else 0,
 							color = selectedColor.toHexString(),
-							mode = if (showAdvancedOptions) selectedMode else "BY_REPS",  // ✅ selectedMode debe ser "UNTIL_BPM_MAX"
+							mode = if (showAdvancedOptions) selectedMode else "BY_REPS",
 						)
 						onSave(phase)
 					}
@@ -378,12 +352,12 @@ fun PhaseBottomSheet(
 				}
 			}
 			
-			// Contenido scrolleable
+		
 			LazyColumn(
 				verticalArrangement = Arrangement.spacedBy(24.dp),
 				contentPadding = PaddingValues(bottom = 32.dp)
 			) {
-				// Datos básicos con subdivisión
+				
 				item {
 					BasicDataSection(
 						phaseName = phaseName,
@@ -395,15 +369,15 @@ fun PhaseBottomSheet(
 						selectedTimeSignature = selectedTimeSignature,
 						onTimeSignatureChange = { selectedTimeSignature = it },
 						timeSignatures = timeSignatures,
-						selectedSubdivision = selectedSubdivision, // ✨ NUEVO
-						onSubdivisionChange = { selectedSubdivision = it }, // ✨ NUEVO
+						selectedSubdivision = selectedSubdivision,
+						onSubdivisionChange = { selectedSubdivision = it },
 						selectedColor = selectedColor,
 						onColorChange = { selectedColor = it },
 						availableColors = availableColors
 					)
 				}
 				
-				// Resto del código permanece igual...
+				
 				item {
 					AdvancedOptionsSwitch(
 						isEnabled = showAdvancedOptions,
@@ -444,8 +418,8 @@ fun BasicDataSection(
 	selectedTimeSignature: String,
 	onTimeSignatureChange: (String) -> Unit,
 	timeSignatures: List<String>,
-	selectedSubdivision: NoteSubdivision, // ✨ NUEVO
-	onSubdivisionChange: (NoteSubdivision) -> Unit, // ✨ NUEVO
+	selectedSubdivision: NoteSubdivision,
+	onSubdivisionChange: (NoteSubdivision) -> Unit,
 	selectedColor: Color,
 	onColorChange: (Color) -> Unit,
 	availableColors: List<Color>,
@@ -474,7 +448,8 @@ fun BasicDataSection(
 				modifier = Modifier.fillMaxWidth(),
 				label = { Text("Nombre de la fase") },
 				placeholder = { Text("Ej: Calentamiento") },
-				shape = RoundedCornerShape(12.dp)
+				shape = RoundedCornerShape(12.dp),
+				maxLines = 1
 			)
 			
 			Row(
@@ -488,7 +463,8 @@ fun BasicDataSection(
 					label = { Text("Duración (min)") },
 					placeholder = { Text("Ej: 10") },
 					keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-					shape = RoundedCornerShape(12.dp)
+					shape = RoundedCornerShape(12.dp),
+					maxLines = 1
 				)
 				OutlinedTextField(
 					value = bpm,
@@ -497,11 +473,12 @@ fun BasicDataSection(
 					label = { Text("BPM inicial") },
 					placeholder = { Text("Ej: 60") },
 					keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-					shape = RoundedCornerShape(12.dp)
+					shape = RoundedCornerShape(12.dp),
+					maxLines = 1
 				)
 			}
 			
-			// Selector de compás
+		
 			Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 				Text(
 					text = "Compás",
@@ -519,7 +496,7 @@ fun BasicDataSection(
 				}
 			}
 			
-			// ✨ NUEVO: Selector de subdivisión
+		
 			Divider(
 				color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
 				thickness = 1.dp
@@ -536,7 +513,7 @@ fun BasicDataSection(
 				thickness = 1.dp
 			)
 			
-			// Selector de color
+		
 			Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 				Text(
 					text = "Color de la fase",
@@ -573,13 +550,15 @@ private fun AdvancedOptionsSwitch(
 			style = MaterialTheme.typography.bodyLarge,
 			color = MaterialTheme.colorScheme.onSurface
 		)
-		androidx.compose.material3.Switch(
+		Switch(
 			checked = isEnabled,
 			onCheckedChange = { if (switchEnabled) onToggle(it) },
 			enabled = switchEnabled,
 			colors = SwitchDefaults.colors(
 				checkedThumbColor = MaterialTheme.colorScheme.primary,
-				checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+				checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+				uncheckedTrackColor = Color(0xFFE0E0E0),
+				uncheckedThumbColor = Color.White
 			)
 		)
 	}
@@ -638,7 +617,8 @@ private fun AdvancedOptionsSection(
 				modifier = Modifier.fillMaxWidth(),
 				readOnly = true,
 				label = { Text("BPM inicial") },
-				shape = RoundedCornerShape(12.dp)
+				shape = RoundedCornerShape(12.dp),
+				maxLines = 1
 			)
 			
 			if (selectedMode == "BY_REPS") {
@@ -688,7 +668,8 @@ private fun AdvancedOptionsByReps(
 			label = { Text("Número de repeticiones") },
 			placeholder = { Text("Ej: 5") },
 			keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-			shape = RoundedCornerShape(12.dp)
+			shape = RoundedCornerShape(12.dp),
+			maxLines = 1
 		)
 		
 		OutlinedTextField(
@@ -698,7 +679,8 @@ private fun AdvancedOptionsByReps(
 			label = { Text("Incremento de BPM por repetición") },
 			placeholder = { Text("Ej: 5") },
 			keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-			shape = RoundedCornerShape(12.dp)
+			shape = RoundedCornerShape(12.dp),
+			maxLines = 1
 		)
 		
 		Card(
@@ -747,7 +729,8 @@ private fun AdvancedOptionsUntilBpmMax(
 			label = { Text("Incremento de BPM por repetición") },
 			placeholder = { Text("Ej: 5") },
 			keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-			shape = RoundedCornerShape(12.dp)
+			shape = RoundedCornerShape(12.dp),
+			maxLines = 1
 		)
 		
 		OutlinedTextField(
@@ -757,7 +740,8 @@ private fun AdvancedOptionsUntilBpmMax(
 			label = { Text("BPM máximo") },
 			placeholder = { Text("Ej: 100") },
 			keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-			shape = RoundedCornerShape(12.dp)
+			shape = RoundedCornerShape(12.dp),
+			maxLines = 1
 		)
 		
 		Card(
@@ -843,7 +827,7 @@ private fun ColorOption(
 	)
 }
 
-// Mantener los componentes de la lista reutilizables
+
 @Composable
 internal fun RoutineNameField(
 	value: String,
@@ -1007,7 +991,7 @@ internal fun SaveButton(
 	}
 }
 
-// Componentes reutilizables de la lista
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EnhancedPhasesReorderableList(
@@ -1290,7 +1274,7 @@ private fun EnhancedDraggablePhaseItem(
 					
 					Spacer(modifier = Modifier.height(2.dp))
 					
-					// ✨ NUEVO: Mostrar compás y subdivisión
+			
 					Row(
 						horizontalArrangement = Arrangement.spacedBy(8.dp),
 						verticalAlignment = Alignment.CenterVertically
@@ -1301,7 +1285,7 @@ private fun EnhancedDraggablePhaseItem(
 							color = MaterialTheme.colorScheme.onSurfaceVariant
 						)
 						
-						// Chip de subdivisión
+						
 						val subdivision = phase.getSubdivisionEnum()
 						Surface(
 							shape = RoundedCornerShape(6.dp),
@@ -1328,63 +1312,7 @@ private fun EnhancedDraggablePhaseItem(
 						}
 					}
 				}
-//				// Color indicator
-//				Box(
-//					modifier = Modifier
-//						.size(48.dp)
-//						.clip(RoundedCornerShape(12.dp))
-//						.background(Color(android.graphics.Color.parseColor(phase.color)))
-//				)
-//
-//				Spacer(modifier = Modifier.width(16.dp))
-//
-//				Column(modifier = Modifier.weight(1f)) {
-//					Text(
-//						text = phase.name,
-//						style = MaterialTheme.typography.titleMedium,
-//						fontWeight = FontWeight.SemiBold,
-//						color = MaterialTheme.colorScheme.onSurface
-//					)
-//
-//					Spacer(modifier = Modifier.height(4.dp))
-//
-//					Row {
-//						Text(
-//							text = "${phase.duration} min",
-//							style = MaterialTheme.typography.bodyMedium,
-//							color = MaterialTheme.colorScheme.primary
-//						)
-//
-//						Text(
-//							text = " • ",
-//							style = MaterialTheme.typography.bodyMedium,
-//							color = MaterialTheme.colorScheme.onSurfaceVariant
-//						)
-//
-//						Text(
-//							text = "${phase.bpmInitial} BPM",
-//							style = MaterialTheme.typography.bodyMedium,
-//							color = MaterialTheme.colorScheme.primary
-//						)
-//
-//						if (phase.mode == "UNTIL_BPM_MAX" && phase.bpmMax > phase.bpmInitial) {
-//							Text(
-//								text = " → ${phase.bpmMax}",
-//								style = MaterialTheme.typography.bodyMedium,
-//								color = MaterialTheme.colorScheme.secondary
-//							)
-//						}
-//					}
-//
-//
-//						Text(
-//							text = "Compás: ${phase.timeSignature}",
-//							style = MaterialTheme.typography.bodySmall,
-//							color = MaterialTheme.colorScheme.onSurfaceVariant
-//						)
-//
-//				}
-				
+
 				AnimatedVisibility(
 					visible = dragDropState.isDragging,
 					enter = fadeIn() + scaleIn(),
@@ -1426,7 +1354,9 @@ private fun EnhancedDraggablePhaseItem(
 						
 						DropdownMenu(
 							expanded = showOptionsMenu,
-							onDismissRequest = { showOptionsMenu = false }
+							onDismissRequest = { showOptionsMenu = false },
+							modifier= Modifier.background(MaterialTheme.colorScheme.surface),
+							shape = RoundedCornerShape(12.dp),
 						) {
 							DropdownMenuItem(
 								text = { Text("Editar") },
@@ -1518,21 +1448,6 @@ class EnhancedDragDropState {
 	}
 }
 
-// Extension function para mover elementos en la lista
-fun <T> MutableList<T>.move(fromIndex: Int, toIndex: Int) {
-	if (fromIndex == toIndex) return
-	val element = removeAt(fromIndex)
-	add(toIndex, element)
-}
-
-
-// Enum para iconos de fases
-enum class PhaseIcon {
-	WARMUP,
-	MAIN,
-	COOLDOWN
-}
-
 
 @Composable
 fun SubdivisionSelector(
@@ -1580,9 +1495,7 @@ fun SubdivisionSelector(
 	}
 }
 
-/**
- * Tarjeta individual para cada subdivisión (versión compacta)
- */
+
 @Composable
 private fun SubdivisionCard(
 	subdivision: NoteSubdivision,
@@ -1615,7 +1528,6 @@ private fun SubdivisionCard(
 			horizontalAlignment = Alignment.CenterHorizontally,
 			verticalArrangement = Arrangement.SpaceBetween
 		) {
-			// Símbolo musical más pequeño
 			Text(
 				text = subdivision.musicSymbol,
 				fontSize = 24.sp,
@@ -1624,39 +1536,6 @@ private fun SubdivisionCard(
 				else
 					MaterialTheme.colorScheme.onSurface
 			)
-//
-//			// Nombre
-//			Text(
-//				text = subdivision.displayName,
-//				style = MaterialTheme.typography.labelMedium,
-//				fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-//				color = if (isSelected)
-//					MaterialTheme.colorScheme.primary
-//				else
-//					MaterialTheme.colorScheme.onSurface,
-//				textAlign = TextAlign.Center,
-//				lineHeight = 14.sp
-//			)
-//
-//			// Pulsos (más compacto)
-//			Surface(
-//				shape = RoundedCornerShape(6.dp),
-//				color = if (isSelected)
-//					MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-//				else
-//					MaterialTheme.colorScheme.surfaceVariant
-//			) {
-//				Text(
-//					text = "${subdivision.clicksPerBeat}x",
-//					modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-//					style = MaterialTheme.typography.labelSmall,
-//					fontWeight = FontWeight.SemiBold,
-//					color = if (isSelected)
-//						MaterialTheme.colorScheme.primary
-//					else
-//						MaterialTheme.colorScheme.onSurfaceVariant
-//				)
-		
 		}
 	}
 }

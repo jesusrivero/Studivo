@@ -37,6 +37,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -88,9 +89,13 @@ fun MetronomeScreenContent(
 							contentDescription = "Back"
 						)
 					}
-				}
+				},
+				colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+					containerColor = MaterialTheme.colorScheme.surface
+				)
 			)
-		}
+		},
+		containerColor = MaterialTheme.colorScheme.surface
 	) { innerPadding ->
 		Box(
 			modifier = Modifier
