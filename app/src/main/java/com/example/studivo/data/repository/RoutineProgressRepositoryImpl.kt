@@ -50,7 +50,6 @@ class RoutineProgressRepositoryImpl @Inject constructor(
 	
 	override suspend fun getCompletedRoutinesToday(): Int {
 		val today = getCurrentDateString()
-		// ✅ Ahora cuenta rutinas únicas (DISTINCT routineId)
 		return progressDao.getCompletedRoutinesCountByDate(today)
 	}
 	
@@ -62,7 +61,6 @@ class RoutineProgressRepositoryImpl @Inject constructor(
 		return progress?.isCompleted ?: false
 	}
 	
-	// Función auxiliar para obtener la fecha en formato "yyyy-MM-dd"
 	private fun getCurrentDateString(): String {
 		val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
 		return sdf.format(java.util.Date())

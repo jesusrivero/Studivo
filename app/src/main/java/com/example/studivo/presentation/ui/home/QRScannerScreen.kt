@@ -72,14 +72,13 @@ fun QRScannerScreen(
 	var showConfirmDialog by remember { mutableStateOf(false) }
 	var scannedData by remember { mutableStateOf("") }
 	var hasCameraPermission by remember { mutableStateOf(false) }
-	
-	
+	val context = LocalContext.current
 	val permissionLauncher = rememberLauncherForActivityResult(
 		contract = ActivityResultContracts.RequestPermission()
 	) { isGranted ->
 		hasCameraPermission = isGranted
 	}
-	val context = LocalContext.current
+
 	
 	LaunchedEffect(Unit) {
 		
@@ -236,7 +235,7 @@ fun ImportConfirmationDialog(
 				contentAlignment = Alignment.Center
 			) {
 				Icon(
-					imageVector = Icons.Default.Download, // puedes cambiar el ícono si deseas
+					imageVector = Icons.Default.Download,
 					contentDescription = null,
 					modifier = Modifier.size(40.dp),
 					tint = MaterialTheme.colorScheme.onPrimaryContainer

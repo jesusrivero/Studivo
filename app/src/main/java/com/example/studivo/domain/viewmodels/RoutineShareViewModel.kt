@@ -16,6 +16,9 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
+import android.util.Log.d
+import android.util.Log.e
+import android.util.Log.w
 
 @HiltViewModel
 class RoutineShareViewModel @Inject constructor(
@@ -39,17 +42,17 @@ class RoutineShareViewModel @Inject constructor(
 	fun generateQRForRoutine(routineId: String) {
 		viewModelScope.launch {
 			try {
-				android.util.Log.d(TAG, "🔄 Iniciando generación de QR para rutina: $routineId")
+				d(TAG, "🔄 Iniciando generación de QR para rutina: $routineId")
 				_uiState.value = ShareUiState.Loading
 				
 				val routineData = shareUseCases.exportRoutine(routineId)
 				if (routineData == null) {
-					android.util.Log.e(TAG, "❌ No se pudo exportar la rutina")
+					e(TAG, "❌ No se pudo exportar la rutina")
 					_uiState.value = ShareUiState.Error("No se pudo exportar la rutina")
 					return@launch
 				}
 				
-				android.util.Log.d(TAG, "✅ Rutina exportada: ${routineData.routine.name} con ${routineData.phases.size} fases")
+			d(TAG, "✅ Rutina exportada: ${routineData.routine.name} con ${routineData.phases.size} fases")
 				
 				// Usar compresión
 				val compressedData = routineData.toCompressedQRData()
@@ -57,27 +60,27 @@ class RoutineShareViewModel @Inject constructor(
 				// Log para debugging
 				val originalSize = routineData.toJson().length
 				val compressedSize = compressedData.length
-				android.util.Log.d(TAG, "📊 Original: $originalSize bytes | Comprimido: $compressedSize bytes | Reducción: ${((1 - compressedSize.toFloat() / originalSize) * 100).toInt()}%")
+		d(TAG, "📊 Original: $originalSize bytes | Comprimido: $compressedSize bytes | Reducción: ${((1 - compressedSize.toFloat() / originalSize) * 100).toInt()}%")
 				
 				if (compressedSize > 2900) {
-					android.util.Log.w(TAG, "⚠️ El QR podría ser demasiado grande: $compressedSize bytes")
+					w(TAG, "⚠️ El QR podría ser demasiado grande: $compressedSize bytes")
 				}
 				
 				val qrBitmap = shareUseCases.generateQRCode(compressedData)
 				
 				if (qrBitmap == null) {
-					android.util.Log.e(TAG, "❌ No se pudo generar el bitmap del QR")
+					e(TAG, "❌ No se pudo generar el bitmap del QR")
 					_uiState.value = ShareUiState.Error("No se pudo generar el código QR. La rutina podría tener demasiadas fases.")
 					return@launch
 				}
 				
-				android.util.Log.d(TAG, "✅ QR generado exitosamente: ${qrBitmap.width}x${qrBitmap.height}")
+			d(TAG, "✅ QR generado exitosamente: ${qrBitmap.width}x${qrBitmap.height}")
 				
 				_qrBitmap.value = qrBitmap
 				_uiState.value = ShareUiState.Success(routineData, qrBitmap)
 				
 			} catch (e: Exception) {
-				android.util.Log.e(TAG, "❌ Error generando QR: ${e.message}", e)
+		e(TAG, "❌ Error generando QR: ${e.message}", e)
 				_uiState.value = ShareUiState.Error(e.localizedMessage ?: "Error desconocido")
 			}
 		}

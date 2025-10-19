@@ -22,7 +22,7 @@ import java.util.UUID
 )
 data class RoutineProgressEntity(
 	@PrimaryKey val id: String = UUID.randomUUID().toString(),
-	val routineId: String?, // ✅
+	val routineId: String?,
 	val routineName: String = "",
 	val date: String, //
 	val progressPercentage: Int = 0,

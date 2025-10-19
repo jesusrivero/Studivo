@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface RoutineProgressRepository {
 	
-	// Guardar o actualizar progreso
+
 	suspend fun saveProgress(progress: RoutineProgress)
 	
 	// Obtener progreso por rutina y fecha
@@ -32,5 +32,6 @@ interface RoutineProgressRepository {
 	// Verificar si la rutina ya está completada hoy
 	suspend fun isRoutineCompletedToday(routineId: String, date: String): Boolean
 	
+	// Obtener todos los progresos ordenados por fecha
 	suspend fun getAllProgressOrderedByDate(): List<RoutineProgress>
 }

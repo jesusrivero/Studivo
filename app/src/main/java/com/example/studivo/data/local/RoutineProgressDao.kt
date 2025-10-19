@@ -18,7 +18,6 @@ interface RoutineProgressDao {
 	@Update
 	suspend fun updateProgress(progress: RoutineProgressEntity)
 	
-	// ✅ Estas queries siguen funcionando con routineId nullable
 	@Query("SELECT * FROM routine_progress WHERE routineId = :routineId AND date = :date ORDER BY lastUpdated DESC LIMIT 1")
 	suspend fun getProgressByRoutineAndDate(routineId: String, date: String): RoutineProgressEntity?
 	
@@ -28,7 +27,7 @@ interface RoutineProgressDao {
 	@Query("SELECT * FROM routine_progress WHERE routineId = :routineId ORDER BY date DESC LIMIT 1")
 	suspend fun getLastProgressByRoutine(routineId: String): RoutineProgressEntity?
 	
-	// ✅ Sin cambios - trae todo el progreso de un día
+
 	@Query("SELECT * FROM routine_progress WHERE date = :date ORDER BY lastUpdated DESC")
 	suspend fun getProgressByDate(date: String): List<RoutineProgressEntity>
 	
@@ -44,11 +43,11 @@ interface RoutineProgressDao {
 	@Delete
 	suspend fun deleteProgress(progress: RoutineProgressEntity)
 	
-	// ✅ CAMBIO IMPORTANTE: Contar rutinas únicas completadas (incluso eliminadas)
+	
 	@Query("SELECT COUNT(DISTINCT routineId) FROM routine_progress WHERE date = :date AND isCompleted = 1")
 	suspend fun getCompletedRoutinesCountByDate(date: String): Int
 	
-	// ✅ Sin cambios - para la racha histórica
+	
 	@Query("SELECT * FROM routine_progress ORDER BY date DESC, lastUpdated DESC")
 	suspend fun getAllProgressOrderedByDate(): List<RoutineProgressEntity>
 }

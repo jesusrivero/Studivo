@@ -6,13 +6,34 @@
         android:name="android.hardware.camera"
         android:required="false" />
 
-    <uses-permission android:name="android.permission.INTERNET" />
+
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- ✅ NUEVOS: Permisos para burbuja flotante -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+    <!-- Notificaciones básicas -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <!-- Alarmas exactas (CRÍTICO para funcionar con batería baja) -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
+
+    <!-- Despertar el dispositivo -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
+    <!-- Recibir evento de reinicio -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+    <!-- Ignorar optimización de batería (Android 6.0+) -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+
+    <!-- Internet (si necesitas sincronizar datos) -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Foreground service (opcional, para notificaciones persistentes) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
 
     <application
         android:name=".MyApp"
@@ -25,6 +46,30 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MonitorWidget"
         tools:targetApi="31">
+
+        <!-- Receiver para AlarmManager -->
+        <receiver
+            android:name=".domain.services.NotificationAlarmReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.ALARM"/>
+            </intent-filter>
+        </receiver>
+
+        <!-- Receiver para reinicio del dispositivo -->
+        <receiver
+            android:name=".domain.services.BootReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name=".infraestructure.MainActivity"
             android:exported="true"

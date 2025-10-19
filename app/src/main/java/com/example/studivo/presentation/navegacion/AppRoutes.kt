@@ -30,4 +30,7 @@ object AppRoutes {
 	
 	@Serializable
 	data object HistoryScreen
+	
+	@Serializable
+	data object NotificationSettingsScreen
 }

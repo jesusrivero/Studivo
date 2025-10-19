@@ -5,6 +5,8 @@ plugins {
 	id("com.google.dagger.hilt.android")
 	id("kotlin-kapt")
 	alias(libs.plugins.jetbrainsKotlinSerialization)
+	
+	
 }
 
 android {
@@ -42,7 +44,18 @@ android {
 	buildFeatures {
 		compose = true
 	}
+	
+	// ✅ AGREGAR CONFIGURACIÓN DE KAPT
+	kapt {
+		correctErrorTypes = true
+		useBuildCache = true
+		javacOptions {
+			option("-Xmaxerrs", 500)
+		}
+	}
 }
+
+
 
 dependencies {
 	
@@ -69,6 +82,7 @@ dependencies {
 	
 	// --- WorkManager (UNA sola referencia) ---
 	implementation("androidx.work:work-runtime-ktx:2.9.0")
+	
 	
 	// --- Hilt (Dagger) ---
 	implementation(libs.hilt.android)          // 2.52 (tu version catalog)
@@ -104,6 +118,7 @@ dependencies {
 	implementation(libs.moshi)
 	implementation(libs.moshi.kotlin)
 	kapt(libs.moshi.kotlin.codegen)
+
 	
 	// --- SplashScreen ---
 	implementation(libs.androidx.core.splashscreen)

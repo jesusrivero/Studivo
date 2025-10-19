@@ -93,7 +93,6 @@ class GetCurrentStreakUseCase @Inject constructor(
 		val today = Calendar.getInstance()
 		val todayString = sdf.format(today.time)
 		
-		// Obtener fechas únicas con al menos una rutina completada o con progreso
 		val uniqueDatesWithProgress = allProgress
 			.filter { it.progressPercentage > 0 || it.isCompleted }
 			.map { it.date }
@@ -102,17 +101,15 @@ class GetCurrentStreakUseCase @Inject constructor(
 		
 		if (uniqueDatesWithProgress.isEmpty()) return 0
 		
-		// Verificar si hoy o ayer hay progreso
 		val lastProgressDate = uniqueDatesWithProgress.first()
 		val yesterday = Calendar.getInstance().apply { add(Calendar.DAY_OF_MONTH, -1) }
 		val yesterdayString = sdf.format(yesterday.time)
 		
-		// Si el último progreso no es de hoy ni de ayer, la racha se rompió
+	
 		if (lastProgressDate != todayString && lastProgressDate != yesterdayString) {
 			return 0
 		}
 		
-		// Contar días consecutivos desde el último progreso hacia atrás
 		var streak = 0
 		val calendar = Calendar.getInstance()
 		if (lastProgressDate == todayString) {
@@ -147,13 +144,12 @@ class GetProgressCalendarUseCase @Inject constructor(
 		
 		val today = Calendar.getInstance()
 		
-		// Determinar fecha de inicio
+		
 		val startDate = if (firstUseDate != null) {
 			Calendar.getInstance().apply {
 				time = sdf.parse(firstUseDate)!!
 			}
 		} else {
-			// Si no hay fecha registrada, usar hoy como inicio
 			Calendar.getInstance()
 		}
 		
@@ -161,10 +157,10 @@ class GetProgressCalendarUseCase @Inject constructor(
 		val calendar = Calendar.getInstance()
 		calendar.time = startDate.time
 		
-		// Agrupar progreso por fecha
+
 		val progressByDate = allProgress.groupBy { it.date }
 		
-		// Solo iterar desde la fecha de inicio hasta hoy
+
 		while (calendar.timeInMillis <= today.timeInMillis) {
 			val dateString = sdf.format(calendar.time)
 			val dayProgress = progressByDate[dateString]
@@ -175,7 +171,7 @@ class GetProgressCalendarUseCase @Inject constructor(
 				dayProgress!!.maxOf { it.progressPercentage }
 			} else 0
 			
-			// Obtener inicial del día de la semana
+	
 			val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
 			val dayInitial = when (dayOfWeek) {
 				Calendar.SUNDAY -> "D"
@@ -207,9 +203,6 @@ class GetProgressCalendarUseCase @Inject constructor(
 	}
 }
 
-// ============================================================================
-// 7️⃣ DOMAIN LAYER - USE CASES DATA CLASS
-// ============================================================================
 
 data class RoutineProgressUseCases(
 	val saveProgress: SaveRoutineProgressUseCase,

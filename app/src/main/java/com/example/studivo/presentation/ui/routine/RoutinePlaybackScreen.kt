@@ -156,7 +156,7 @@ fun RoutinePlaybackScreen(
 			}
 		}
 		
-		// Cuenta regresiva
+
 		if (uiState is PlaybackUiState.Playing) {
 			val playbackState = (uiState as PlaybackUiState.Playing).state
 			if (playbackState.isCountingDown) {
@@ -834,14 +834,14 @@ private fun ControlButtonsSection(
 private fun CompletionDialog(
 	onDismiss: () -> Unit,
 	routineName: String,
-	totalTime: Int, // Este es accurateTotalTime
+	totalTime: Int,
 ) {
-	// ✅ Cálculo mejorado del tiempo
+
 	val hours = totalTime / 3600
 	val minutes = (totalTime % 3600) / 60
 	val seconds = totalTime % 60
 	
-	// Formateo inteligente
+
 	val timeDisplay = when {
 		hours > 0 -> {
 			// Si hay horas, redondear minutos si hay segundos
@@ -1023,8 +1023,6 @@ fun ExitConfirmationDialog(
 	)
 }
 
-
-// --- Data Classes ---
 data class Routine(
 	val id: String,
 	val name: String,

@@ -12,9 +12,12 @@ import com.example.studivo.data.preferences.ThemeDataStore
 import com.example.studivo.data.repository.RoutineProgressRepositoryImpl
 import com.example.studivo.data.repository.RoutineRepositoryImpl
 import com.example.studivo.data.repository.RoutineShareRepositoryImpl
+import com.example.studivo.domain.model.helpers.NotificationHelper
 import com.example.studivo.domain.repository.RoutineProgressRepository
 import com.example.studivo.domain.repository.RoutineRepository
 import com.example.studivo.domain.repository.RoutineShareRepository
+import com.example.studivo.domain.services.NotificationPreferences
+import com.example.studivo.domain.services.NotificationScheduler
 import com.example.studivo.domain.usecase.DeletePhaseUseCase
 import com.example.studivo.domain.usecase.DeleteRoutineProgressUseCase
 import com.example.studivo.domain.usecase.DeleteRoutineUseCase
@@ -174,5 +177,37 @@ object AppModule {
 	@Singleton
 	fun provideAppPreferences(@ApplicationContext context: Context): AppPreferences {
 		return AppPreferences(context)
+	}
+	
+	
+	
+	
+	
+	
+	@Provides
+	@Singleton
+	fun provideNotificationPreferences(
+		@ApplicationContext context: Context
+	): NotificationPreferences {
+		return NotificationPreferences(context)
+	}
+	
+	@Provides
+	@Singleton
+	fun provideNotificationScheduler(
+		@ApplicationContext context: Context,
+		preferences: NotificationPreferences
+	): NotificationScheduler {
+		return NotificationScheduler(context, preferences)
+	}
+	
+	@Provides
+	@Singleton
+	fun provideNotificationHelper(
+		@ApplicationContext context: Context,
+		progressRepository: RoutineProgressRepository,
+		preferences: NotificationPreferences
+	): NotificationHelper {
+		return NotificationHelper(context, progressRepository, preferences)
 	}
 }

@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -104,7 +106,6 @@ fun MainScreenContent(
 	progressViewModel: RoutineProgressViewModel = hiltViewModel(),
 	shareViewModel: RoutineShareViewModel = hiltViewModel(),
 ) {
-	
 	var selectedRoutine by remember { mutableStateOf<RoutineSummary?>(null) }
 	var showBottomSheet by remember { mutableStateOf(false) }
 	var showShareDialog by remember { mutableStateOf(false) }
@@ -117,9 +118,8 @@ fun MainScreenContent(
 	
 	LaunchedEffect(Unit) {
 		viewModel.loadRoutines()
-		progressViewModel.loadCurrentStreak()
-		progressViewModel.loadProgressCalendar()
 		progressViewModel.initializeCalendarIfNeeded()
+		progressViewModel.loadCurrentStreak()
 	}
 	
 	Scaffold(
@@ -521,19 +521,17 @@ fun MinimalRoutineItem(
 
 
 @Composable
-fun EmptyStateRoutines(
-) {
+fun EmptyStateRoutines() {
 	Column(
 		modifier = Modifier
 			.fillMaxWidth()
 			.padding(horizontal = 32.dp, vertical = 10.dp),
 		horizontalAlignment = Alignment.CenterHorizontally
 	) {
-		
+		// Logo circular
 		Box(
 			contentAlignment = Alignment.Center
 		) {
-			
 			Box(
 				modifier = Modifier
 					.size(140.dp)
@@ -563,6 +561,7 @@ fun EmptyStateRoutines(
 		
 		Spacer(modifier = Modifier.height(10.dp))
 		
+		// Título
 		Text(
 			text = "Comienza tu viaje musical",
 			style = MaterialTheme.typography.headlineSmall,
@@ -573,6 +572,7 @@ fun EmptyStateRoutines(
 		
 		Spacer(modifier = Modifier.height(12.dp))
 		
+		// Descripción
 		Text(
 			text = "Crea tu primera rutina de práctica personalizada y alcanza tus metas musicales paso a paso",
 			style = MaterialTheme.typography.bodyLarge,
@@ -583,74 +583,131 @@ fun EmptyStateRoutines(
 		
 		Spacer(modifier = Modifier.height(32.dp))
 		
-		
+		// Features - Centradas horizontalmente
 		Column(
 			verticalArrangement = Arrangement.spacedBy(16.dp),
+			horizontalAlignment = Alignment.CenterHorizontally,
 			modifier = Modifier.fillMaxWidth()
 		) {
-			EmptyStateFeature(
-				icon = Icons.Default.Timer,
-				title = "Sesiones cronometradas",
-				description = "Organiza tu práctica con tiempos precisos"
-			)
+			// Feature 1
+			Row(
+				modifier = Modifier.wrapContentWidth(),
+				verticalAlignment = Alignment.Top,
+				horizontalArrangement = Arrangement.spacedBy(12.dp)
+			) {
+				Box(
+					modifier = Modifier
+						.size(40.dp)
+						.background(
+							color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+							shape = RoundedCornerShape(10.dp)
+						),
+					contentAlignment = Alignment.Center
+				) {
+					Icon(
+						imageVector = Icons.Default.Timer,
+						contentDescription = null,
+						modifier = Modifier.size(20.dp),
+						tint = MaterialTheme.colorScheme.primary
+					)
+				}
+				
+				Column(
+					modifier = Modifier.widthIn(max = 300.dp)
+				) {
+					Text(
+						text = "Sesiones cronometradas",
+						style = MaterialTheme.typography.titleSmall,
+						fontWeight = FontWeight.SemiBold,
+						color = MaterialTheme.colorScheme.onSurface
+					)
+					Text(
+						text = "Organiza tu práctica con tiempos precisos",
+						style = MaterialTheme.typography.bodySmall,
+						color = MaterialTheme.colorScheme.onSurfaceVariant
+					)
+				}
+			}
 			
-			EmptyStateFeature(
-				icon = Icons.Default.Layers,
-				title = "Fases personalizadas",
-				description = "Divide tu rutina en secciones enfocadas"
-			)
+			// Feature 2
+			Row(
+				modifier = Modifier.wrapContentWidth(),
+				verticalAlignment = Alignment.Top,
+				horizontalArrangement = Arrangement.spacedBy(12.dp)
+			) {
+				Box(
+					modifier = Modifier
+						.size(40.dp)
+						.background(
+							color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+							shape = RoundedCornerShape(10.dp)
+						),
+					contentAlignment = Alignment.Center
+				) {
+					Icon(
+						imageVector = Icons.Default.Layers,
+						contentDescription = null,
+						modifier = Modifier.size(20.dp),
+						tint = MaterialTheme.colorScheme.primary
+					)
+				}
+				
+				Column(
+					modifier = Modifier.widthIn(max = 300.dp)
+				) {
+					Text(
+						text = "Fases personalizadas",
+						style = MaterialTheme.typography.titleSmall,
+						fontWeight = FontWeight.SemiBold,
+						color = MaterialTheme.colorScheme.onSurface
+					)
+					Text(
+						text = "Divide tu rutina en secciones enfocadas",
+						style = MaterialTheme.typography.bodySmall,
+						color = MaterialTheme.colorScheme.onSurfaceVariant
+					)
+				}
+			}
 			
-			EmptyStateFeature(
-				icon = Icons.Default.PlayArrow,
-				title = "Practica sin interrupciones",
-				description = "Modo de reproducción automático"
-			)
-		}
-	}
-}
-
-@Composable
-fun EmptyStateFeature(
-	icon: androidx.compose.ui.graphics.vector.ImageVector,
-	title: String,
-	description: String,
-) {
-	Row(
-		modifier = Modifier.fillMaxWidth(),
-		verticalAlignment = Alignment.Top,
-		horizontalArrangement = Arrangement.spacedBy(12.dp)
-	) {
-		Box(
-			modifier = Modifier
-				.size(40.dp)
-				.background(
-					color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
-					shape = RoundedCornerShape(10.dp)
-				),
-			contentAlignment = Alignment.Center
-		) {
-			Icon(
-				imageVector = icon,
-				contentDescription = null,
-				modifier = Modifier.size(20.dp),
-				tint = MaterialTheme.colorScheme.primary
-			)
-		}
-		
-		Column(
-			modifier = Modifier.weight(1f)
-		) {
-			Text(
-				text = title,
-				style = MaterialTheme.typography.titleSmall,
-				fontWeight = FontWeight.SemiBold,
-				color = MaterialTheme.colorScheme.onSurface
-			)
-			Text(
-				text = description,
-				style = MaterialTheme.typography.bodySmall,
-				color = MaterialTheme.colorScheme.onSurfaceVariant
-			)
+			// Feature 3
+			Row(
+				modifier = Modifier.wrapContentWidth(),
+				verticalAlignment = Alignment.Top,
+				horizontalArrangement = Arrangement.spacedBy(12.dp)
+			) {
+				Box(
+					modifier = Modifier
+						.size(40.dp)
+						.background(
+							color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+							shape = RoundedCornerShape(10.dp)
+						),
+					contentAlignment = Alignment.Center
+				) {
+					Icon(
+						imageVector = Icons.Default.PlayArrow,
+						contentDescription = null,
+						modifier = Modifier.size(20.dp),
+						tint = MaterialTheme.colorScheme.primary
+					)
+				}
+				
+				Column(
+					modifier = Modifier.widthIn(max = 300.dp)
+				) {
+					Text(
+						text = "Practica sin interrupciones",
+						style = MaterialTheme.typography.titleSmall,
+						fontWeight = FontWeight.SemiBold,
+						color = MaterialTheme.colorScheme.onSurface
+					)
+					Text(
+						text = "Modo de reproducción automático",
+						style = MaterialTheme.typography.bodySmall,
+						color = MaterialTheme.colorScheme.onSurfaceVariant
+					)
+				}
+			}
 		}
 	}
 }

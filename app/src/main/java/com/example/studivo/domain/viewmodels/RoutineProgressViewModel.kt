@@ -7,13 +7,11 @@ import com.example.studivo.data.local.AppPreferences
 import com.example.studivo.domain.model.DayProgress
 import com.example.studivo.domain.model.RoutineProgress
 import com.example.studivo.domain.usecase.RoutineProgressUseCases
-
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -30,7 +28,7 @@ class RoutineProgressViewModel @Inject constructor(
 	private val appPreferences: AppPreferences
 ) : ViewModel() {
 	
-	// ✅ NUEVO: StateFlow para guardar la fecha de primer uso
+
 	private val _firstUseDate = MutableStateFlow<String?>(null)
 	
 	private val _currentProgress = MutableStateFlow<RoutineProgress?>(null)
@@ -57,6 +55,7 @@ class RoutineProgressViewModel @Inject constructor(
 	
 	private val progressFlows = mutableMapOf<String, StateFlow<RoutineProgress?>>()
 	
+	
 	private fun getCurrentDateString(): String {
 		val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 		return sdf.format(Date())
@@ -79,12 +78,13 @@ class RoutineProgressViewModel @Inject constructor(
 		return flow
 	}
 	
-	//Cargar racha actual
 	
-	// Cargar racha actual
 	fun loadCurrentStreak() {
 		viewModelScope.launch {
 			try {
+				if (_firstUseDate.value == null) {
+					_firstUseDate.value = appPreferences.getFirstUseDate()
+				}
 				val calendar = progressUseCases.getProgressCalendar(_firstUseDate.value)
 				val completedDays = calendar.filter { it.hasCompletedRoutine }.map { it.date }
 				_currentStreak.value = calculateStreak(completedDays)
@@ -93,6 +93,18 @@ class RoutineProgressViewModel @Inject constructor(
 			}
 		}
 	}
+	
+//	fun loadCurrentStreak() {
+//		viewModelScope.launch {
+//			try {
+//				val calendar = progressUseCases.getProgressCalendar(_firstUseDate.value)
+//				val completedDays = calendar.filter { it.hasCompletedRoutine }.map { it.date }
+//				_currentStreak.value = calculateStreak(completedDays)
+//			} catch (e: Exception) {
+//				_errorMessage.value = e.localizedMessage ?: "Error cargando racha"
+//			}
+//		}
+//	}
 	
 	private fun calculateStreak(completedDates: List<String>): Int {
 		if (completedDates.isEmpty()) return 0
@@ -105,8 +117,7 @@ class RoutineProgressViewModel @Inject constructor(
 		
 		var streak = 0
 		val current = Calendar.getInstance()
-		
-		// Si hoy NO hay rutina completada, empieza desde AYER
+
 		if (!completedSet.contains(today)) {
 			current.add(Calendar.DAY_OF_YEAR, -1)
 		}
@@ -120,7 +131,6 @@ class RoutineProgressViewModel @Inject constructor(
 				streak++
 				current.add(Calendar.DAY_OF_YEAR, -1)
 			} else {
-				// Si hay una brecha de más de 1 día, se rompe la racha
 				if (day.before(current.apply { add(Calendar.DAY_OF_YEAR, -1) })) {
 					break
 				}
@@ -133,7 +143,7 @@ class RoutineProgressViewModel @Inject constructor(
 	
 	fun loadProgressCalendar() {
 		viewModelScope.launch {
-			appPreferences.saveFirstUseDateIfNotExists() // Guarda si no existe
+			appPreferences.saveFirstUseDateIfNotExists()
 			val firstDate = appPreferences.getFirstUseDate()
 			_firstUseDate.value = firstDate
 			
@@ -142,58 +152,6 @@ class RoutineProgressViewModel @Inject constructor(
 		}
 	}
 	
-//	// ✅ MODIFICADO: Cargar calendario usando fecha de primer uso
-//	fun loadProgressCalendar(firstUseDate: String? = null) {
-//		viewModelScope.launch {
-//			try {
-//				_isLoading.value = true
-//
-//				// Si se proporciona firstUseDate, guardarlo
-//				if (firstUseDate != null) {
-//					_firstUseDate.value = firstUseDate
-//				}
-//
-//				// Cargar calendario desde la fecha de primer uso
-//				val calendar = progressUseCases.getProgressCalendar(_firstUseDate.value)
-//				_progressCalendar.value = calendar
-//			} catch (e: Exception) {
-//				_errorMessage.value = e.localizedMessage ?: "Error cargando calendario"
-//			} finally {
-//				_isLoading.value = false
-//			}
-//		}
-//	}
-	
-	
-	// ✅ NUEVO: Método para establecer la fecha de primer uso
-	fun setFirstUseDate(date: String) {
-		_firstUseDate.value = date
-		loadProgressCalendar()
-	}
-	
-	fun loadTodayProgress(routineId: String) {
-		viewModelScope.launch {
-			try {
-				_isLoading.value = true
-				val date = getCurrentDateString()
-				val progress = progressUseCases.getProgress(routineId, date)
-				_currentProgress.value = progress
-			} catch (e: Exception) {
-				_errorMessage.value = e.localizedMessage ?: "Error cargando progreso"
-			} finally {
-				_isLoading.value = false
-			}
-		}
-	}
-	
-	fun observeTodayProgress(routineId: String) {
-		viewModelScope.launch {
-			val date = getCurrentDateString()
-			progressUseCases.getProgressFlow(routineId, date).collect { progress ->
-				_currentProgress.value = progress
-			}
-		}
-	}
 	
 	fun initializeCalendarIfNeeded() {
 		viewModelScope.launch {
@@ -201,11 +159,9 @@ class RoutineProgressViewModel @Inject constructor(
 			val today = sdf.format(Date())
 			
 			if (_firstUseDate.value == null) {
-				// Guardamos la fecha actual como primer uso
 				_firstUseDate.value = today
 				loadProgressCalendar()
 			} else {
-				// Si ya existe, cargamos normalmente
 				loadProgressCalendar()
 			}
 		}
@@ -213,7 +169,7 @@ class RoutineProgressViewModel @Inject constructor(
 	
 	fun updateProgress(
 		routineId: String,
-		routineName: String = "", // ✅ NUEVO parámetro
+		routineName: String = "",
 		progressPercentage: Int,
 		currentPhaseIndex: Int = 0,
 		currentRepetition: Int = 1,
@@ -228,7 +184,7 @@ class RoutineProgressViewModel @Inject constructor(
 				val progress = RoutineProgress(
 					id = UUID.randomUUID().toString(),
 					routineId = routineId,
-					routineName = routineName, // ✅ NUEVO
+					routineName = routineName,
 					date = date,
 					progressPercentage = progressPercentage.coerceIn(0, 100),
 					currentPhaseIndex = currentPhaseIndex,
@@ -241,6 +197,10 @@ class RoutineProgressViewModel @Inject constructor(
 
 				progressUseCases.saveProgress(progress)
 				_currentProgress.value = progress
+				
+				// 🔁 Recalcular racha y calendario después de guardar
+				loadProgressCalendar()
+				loadCurrentStreak()
 			} catch (e: Exception) {
 				_errorMessage.value = e.localizedMessage ?: "Error guardando progreso"
 			} finally {
@@ -249,44 +209,7 @@ class RoutineProgressViewModel @Inject constructor(
 		}
 	}
 	
-	fun loadProgressHistory(routineId: String) {
-		viewModelScope.launch {
-			try {
-				_isLoading.value = true
-				val history = progressUseCases.getProgressHistory(routineId)
-				_progressHistory.value = history
-			} catch (e: Exception) {
-				_errorMessage.value = e.localizedMessage ?: "Error cargando historial"
-			} finally {
-				_isLoading.value = false
-			}
-		}
-	}
-	
-	fun loadCompletedRoutinesToday() {
-		viewModelScope.launch {
-			try {
-				val count = progressUseCases.getCompletedRoutinesToday()
-				_completedRoutinesToday.value = count
-			} catch (e: Exception) {
-				_errorMessage.value = e.localizedMessage ?: "Error cargando estadísticas"
-			}
-		}
-	}
-	
-	fun isCompletedToday(routineId: String, onResult: (Boolean) -> Unit) {
-		viewModelScope.launch {
-			try {
-				val date = getCurrentDateString()
-				val isCompleted = progressUseCases.isRoutineCompletedToday(routineId, date)
-				onResult(isCompleted)
-			} catch (e: Exception) {
-				_errorMessage.value = e.localizedMessage ?: "Error verificando estado"
-				onResult(false)
-			}
-		}
-	}
-	
+
 	fun deleteProgress(routineId: String) {
 		viewModelScope.launch {
 			try {

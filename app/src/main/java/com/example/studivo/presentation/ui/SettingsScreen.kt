@@ -1,12 +1,13 @@
 package com.example.studivo.presentation.ui
 
-import androidx.compose.foundation.background
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,8 +21,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Divider
@@ -33,26 +34,24 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.studivo.domain.viewmodels.ThemeViewModel
+import com.example.studivo.presentation.navegacion.AppRoutes
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,10 +69,7 @@ fun SettingsScreenContent(
 	viewModel: ThemeViewModel = hiltViewModel(),
 ) {
 	val isDarkMode by viewModel.isDarkMode.collectAsState()
-	
-	// Estado para controlar el Dialog
-	var dialogText by remember { mutableStateOf<String?>(null) }
-	var dialogTitle by remember { mutableStateOf<String?>(null) }
+	val context = LocalContext.current
 	
 	Scaffold(
 		topBar = {
@@ -101,7 +97,7 @@ fun SettingsScreenContent(
 				.verticalScroll(rememberScrollState())
 				.padding(horizontal = 20.dp, vertical = 12.dp)
 		) {
-			// 🌗 APARIENCIA
+			
 			SettingsSectionTitle("Apariencia")
 			SettingsSwitchItem(
 				title = "Modo oscuro",
@@ -110,78 +106,69 @@ fun SettingsScreenContent(
 				onCheckedChange = { viewModel.toggleDarkMode(it) },
 			)
 			
+//			Spacer(modifier = Modifier.height(12.dp))
+//			Divider(Modifier.alpha(0.2f))
+//			Spacer(modifier = Modifier.height(12.dp))
+//
+//			// Nueva sección para Notificaciones
+//			SettingsSectionTitle("Notificaciones")
+//			SettingsItem(
+//				title = "Configuración de notificaciones",
+//				icon = Icons.Default.Notifications
+//			) {
+//				// Navegar a NotificationSettingsScreen
+//				navController.navigate(AppRoutes.NotificationSettingsScreen)
+//			}
+			
 			Spacer(modifier = Modifier.height(12.dp))
 			Divider(Modifier.alpha(0.2f))
 			Spacer(modifier = Modifier.height(12.dp))
 			
-			// ℹ️ INFORMACIÓN GENERAL
-			SettingsSectionTitle("Información")
-			SettingsItem("Sobre nosotros", Icons.Default.Info) {
-				dialogTitle = "Sobre nosotros"
-				dialogText = "Aquí va todo el contenido de Sobre Nosotros..."
-			}
+			SettingsSectionTitle("Información Legal")
 			SettingsItem("Políticas de privacidad", Icons.Default.PrivacyTip) {
-				dialogTitle = "Políticas de privacidad"
-				dialogText = "Aquí va todo el contenido de Políticas de Privacidad..."
+				openUrl(context, "https://jesusrivero.github.io/Politicas-de-privacidad/")
 			}
 			SettingsItem("Términos y condiciones", Icons.Default.Description) {
-				dialogTitle = "Términos y condiciones"
-				dialogText = "Aquí va todo el contenido de Términos y Condiciones..."
+				openUrl(context, "https://jesusrivero.github.io/Terminos-y-condiciones-Studivo/")
 			}
 			
 			Spacer(modifier = Modifier.height(28.dp))
 			
-			// 🔢 VERSIÓN
+			
 			Text(
 				text = "Versión 1.0.0",
 				style = MaterialTheme.typography.bodySmall,
 				color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
 				modifier = Modifier.align(Alignment.CenterHorizontally)
 			)
-		}
-		
-		// Dialog modal
-		// Dentro de SettingsScreenContent
-		if (dialogText != null && dialogTitle != null) {
-			Dialog(onDismissRequest = { dialogText = null; dialogTitle = null }) {
-				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.fillMaxHeight(0.9f) // ocupa 90% de la pantalla
-						.clip(RoundedCornerShape(16.dp))
-						.background(MaterialTheme.colorScheme.surface)
-						.padding(16.dp)
-				) {
-					Column(
-						modifier = Modifier
-							.fillMaxWidth()
-							.verticalScroll(rememberScrollState())
-					) {
-						Text(
-							text = dialogTitle!!,
-							style = MaterialTheme.typography.titleLarge.copy(
-								fontWeight = FontWeight.Bold
-							),
-							modifier = Modifier.padding(bottom = 12.dp)
-						)
-						Text(
-							text = dialogText!!,
-							style = MaterialTheme.typography.bodyMedium,
-							modifier = Modifier.padding(bottom = 24.dp)
-						)
-						TextButton(
-							onClick = { dialogText = null; dialogTitle = null },
-							modifier = Modifier.align(Alignment.End)
-						) {
-							Text("Cerrar")
-						}
-					}
-				}
-			}
+			
+			Spacer(modifier = Modifier.height(12.dp))
+			
+
+			Text(
+				text = "Studivo es una app creada para facilitar el estudio musical, permitiendo organizar rutinas, practicar con metrónomo y compartir ejercicios mediante códigos QR cifrados.\nBuscamos ofrecer una experiencia segura y educativa.",
+				style = MaterialTheme.typography.bodySmall,
+				color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+				textAlign = TextAlign.Center,
+				modifier = Modifier
+					.align(Alignment.CenterHorizontally)
+					.padding(horizontal = 16.dp)
+			)
+			
+			Spacer(modifier = Modifier.height(20.dp))
 		}
 	}
 }
 
+
+private fun openUrl(context: Context, url: String) {
+	try {
+		val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+		context.startActivity(intent)
+	} catch (e: Exception) {
+		Toast.makeText(context, "No se pudo abrir el enlace", Toast.LENGTH_SHORT).show()
+	}
+}
 
 @Composable
 fun SettingsSectionTitle(title: String) {

@@ -195,13 +195,10 @@ class RoutinePlaybackViewModel @Inject constructor(
 		val currentPhase = state.currentPhase ?: return
 		val nextRepetition = state.currentRepetition + 1
 		
-		// ✅ CORRECCIÓN: La lógica de canProceed debe verificar si YA alcanzamos el máximo
 		val canProceed = when (currentPhase.mode) {
 			"BY_REPS" -> nextRepetition <= currentPhase.repetitions
 			"UNTIL_BPM_MAX" -> {
-				// ✅ CAMBIO: Verificar el BPM de la repetición ACTUAL, no la siguiente
 				val currentBPM = currentPhase.calculateCurrentBPM(state.currentRepetition)
-				// Si el BPM actual ya es el máximo, NO procedemos (pasamos a siguiente fase)
 				currentBPM < currentPhase.bpmMax
 			}
 			else -> false
@@ -357,7 +354,7 @@ class RoutinePlaybackViewModel @Inject constructor(
 					progressPercentage = currentProgress.coerceIn(0, 100),
 					currentPhaseIndex = state.currentPhaseIndex,
 					currentRepetition = state.currentRepetition,
-					totalElapsedTime = state.accurateTotalTime, // ✅ USAR TIEMPO PRECISO
+					totalElapsedTime = state.accurateTotalTime,
 					isCompleted = state.isCompleted,
 					lastUpdated = System.currentTimeMillis(),
 					createdAt = existingProgress?.createdAt ?: System.currentTimeMillis()

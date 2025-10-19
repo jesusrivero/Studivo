@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="MonitorWidget.app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-10-13T18:01:19.385262200Z">
+        <DropdownSelection timestamp="2025-10-19T01:39:10.739424400Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=R58M62J1ALP" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Jesus Morales\.android\avd\Medium_Tablet.avd" />
             </handle>
           </Target>
         </DropdownSelection>

@@ -17,6 +17,7 @@ import com.example.studivo.presentation.ui.home.QRScannerScreen
 import com.example.studivo.presentation.ui.routine.CreateRoutineScreen
 import com.example.studivo.presentation.ui.routine.EditedRoutineScreen
 import com.example.studivo.presentation.ui.routine.RoutinePlaybackScreen
+import com.example.studivo.presentation.ui.settings.NotificationSettingsScreen
 
 @Composable
 fun NavigationHost(
@@ -66,14 +67,13 @@ fun NavigationHost(
 		}
 		
 		composable<AppRoutes.QRScannerScreen> {
-			QRScannerScreen(
-				navController = navController
-			)
+			QRScannerScreen(navController = navController)
 		}
 		composable<AppRoutes.HistoryScreen> {
-			HistoryScreen(
-				navController = navController
-			)
+			HistoryScreen(navController = navController)
+		}
+		composable<AppRoutes.NotificationSettingsScreen> {
+			NotificationSettingsScreen(navController = navController,onNavigateBack = { navController.popBackStack()})
 		}
 		
 	}
